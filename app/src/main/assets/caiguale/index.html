@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>菜瓜乐影视</title>
+<script>
+/* ES5 兼容引导：必须在样式与业务脚本之前执行 */
+(function () {
+  var html = document.documentElement;
+  if (!Element.prototype.closest) {
+    Element.prototype.closest = function (selector) {
+      var node = this;
+      while (node && node.nodeType === 1) {
+        if (node.matches && node.matches(selector)) return node;
+        node = node.parentNode;
+      }
+      return null;
+    };
+  }
+  if (!Element.prototype.replaceChildren) {
+    Element.prototype.replaceChildren = function () {
+      while (this.firstChild) this.removeChild(this.firstChild);
+      for (var i = 0; i < arguments.length; i++) this.appendChild(arguments[i]);
+    };
+  }
+  try {
+    var probe = document.createElement('div');
+    probe.style.display = 'flex';
+    probe.style.flexDirection = 'column';
+    probe.style.width = '40px';
+    probe.appendChild(document.createElement('i'));
+    probe.appendChild(document.createElement('i'));
+    document.documentElement.appendChild(probe);
+    var gapOk = typeof getComputedStyle === 'function' && getComputedStyle(probe).rowGap !== undefined && CSS.supports && CSS.supports('gap', '1px');
+    probe.parentNode.removeChild(probe);
+    if (!gapOk) html.className += ' no-layout-gap';
+  } catch (e) { html.className += ' no-layout-gap'; }
+  try {
+    if (!(window.CSS && CSS.supports && CSS.supports('width', 'c' + 'alc(1px)'))) html.className += ' no-css-functions';
+  } catch (e2) { html.className += ' no-css-functions'; }
+  try {
+    if (!(window.CSS && CSS.supports && CSS.supports('aspect-ratio', '16 / 9'))) html.className += ' no-aspect-ratio';
+  } catch (e3) { html.className += ' no-aspect-ratio'; }
+})();
+</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="topnav" id="topnav">
+    <div class="brand"><span class="mark" aria-hidden="true"></span>菜瓜乐影视<small>CAIGUALE TV</small></div>
+    <nav class="navlinks" aria-label="主导航">
+      <button class="focusable navlink" data-nav="home">首页</button>
+      <button class="focusable navlink" data-nav="search">搜索</button>
+      <button class="focusable navlink" data-nav="source" id="sourceLink">来源</button>
+    </nav>
+    <div class="navright">
+      <span class="sitename" id="siteName"></span>
+      <button class="focusable navbtn" data-nav="settings">设置</button>
+    </div>
+  </header>
+
+  <main class="page active" id="pageHome">
+    <div class="hero" id="hero">
+      <img class="heroimg" id="heroImg" alt="" aria-hidden="true"><div class="herofallback" id="heroFallback"></div>
+      <div class="herobody">
+        <div class="eyebrow" id="heroEyebrow">来自当前来源</div>
+        <h1 class="bigtitle" id="heroTitle">加载中</h1>
+        <div class="metadata" id="heroMeta"></div>
+        <p class="synopsis" id="heroSynopsis"></p>
+        <div class="controls">
+          <button class="focusable main" data-act="play-hero">立即播放</button>
+          <button class="focusable" data-act="detail-hero">详情</button>
+        </div>
+      </div>
+    </div>
+    <div class="rails" id="rails"></div>
+    <div class="pagefoot"></div>
+  </main>
+
+  <main class="page" id="pageSearch">
+    <div class="searchhead">
+      <button class="focusable backrow" data-act="back">‹　返回</button>
+      <h1 class="subtitle">搜索</h1>
+      <div class="searchbox">
+        <input id="searchInput" class="focusable searchinput" type="search" placeholder="按 OK 进入输入，再按 OK 搜索" autocomplete="off" spellcheck="false" readonly>
+        <button class="focusable main" id="searchGo" data-act="do-search">搜索</button>
+      </div>
+      <p class="hint" id="searchHint">仅搜索当前来源；结果来自已配置站点。</p>
+    </div>
+    <div class="searchbody" id="searchBody"></div>
+  </main>
+
+  <main class="page" id="pageDetail">
+    <img class="detailbanner" id="detailBanner" alt="" aria-hidden="true"><div class="herofallback detailfallback" id="detailFallback"></div>
+    <div class="detailshade"></div>
+    <div class="detailscroll">
+      <button class="focusable backrow" data-act="back">‹　返回</button>
+      <div class="detailmain">
+        <div class="eyebrow" id="detailSource">当前来源</div>
+        <h1 class="detitle" id="detailTitle"></h1>
+        <div class="metadata" id="detailMeta"></div>
+        <p class="synopsis" id="detailSynopsis"></p>
+        <div class="controls" id="detailControls">
+          <button class="focusable main" data-act="play-detail">播放</button>
+          <button class="focusable" data-act="sources">来源与选集</button>
+          <button class="focusable" data-act="search-title">搜索同名</button>
+        </div>
+        <p class="credits" id="detailCredits"></p>
+        <p class="note" id="detailNote" hidden></p>
+      </div>
+      <section class="episodes" id="episodes" hidden>
+        <h2>来源与选集 <small id="episodeCount"></small></h2>
+        <div class="fromrow" id="fromRow"></div>
+        <div class="epgrid" id="epGrid"></div>
+        <p class="hint" id="epHint"></p>
+      </section>
+    </div>
+  </main>
+
+  <div class="modalshade" id="modal" aria-hidden="true">
+    <div class="modalbox" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle"></h3>
+      <p id="modalBody"></p>
+      <div class="modalactions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

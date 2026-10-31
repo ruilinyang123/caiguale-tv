@@ -1,0 +1,24 @@
+[Unit]
+Description=WebTV remote relay
+After=network.target
+
+[Service]
+Type=simple
+User=webtv-remote
+Group=webtv-remote
+StateDirectory=webtv-remote
+StateDirectoryMode=0700
+UMask=0077
+WorkingDirectory=/var/lib/webtv-remote
+ExecStart=/usr/local/bin/webtv-remote-go -listen 127.0.0.1:8787 -state /var/lib/webtv-remote/identities.json -origin https://remote.example.com -trusted-proxy 127.0.0.1/32
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/webtv-remote
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

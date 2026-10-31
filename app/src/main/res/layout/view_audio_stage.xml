@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/audioStageRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/shape_audio_player_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingStart="32dp"
+    android:paddingTop="18dp"
+    android:paddingEnd="32dp"
+    android:paddingBottom="14dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/audioDisc"
+            android:layout_width="168dp"
+            android:layout_height="168dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/shape_audio_disc_back"
+            android:padding="11dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/audioCover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/artwork"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.AudioCover"
+                app:strokeColor="@color/white_20"
+                app:strokeWidth="1dp" />
+
+        </FrameLayout>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/audioTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:shadowColor="@color/black_90"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            tools:text="八段锦口令音乐" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/audioSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/white_70"
+            android:textSize="14sp"
+            tools:text="站源 · 当前播放列表" />
+
+        <com.fongmi.android.tv.ui.custom.LyricsOverlayView
+            android:id="@+id/audioLyrics"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_weight="1" />
+
+        <com.fongmi.android.tv.ui.custom.KaraokeStatusView
+            android:id="@+id/audioKaraoke"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/audioPlaybackPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical">
+
+            <com.fongmi.android.tv.ui.custom.CustomSeekView
+                android:id="@+id/audioSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/audioTransport"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/audioRepeatAction"
+                    style="@style/AudioActionIconButton"
+                    android:contentDescription="@string/player_audio_repeat"
+                    android:src="@drawable/ic_audio_repeat" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/audioPrev"
+                    style="@style/AudioActionIconButton"
+                    android:layout_marginStart="14dp"
+                    android:contentDescription="@string/play_prev"
+                    android:src="@drawable/ic_audio_prev" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/audioPlay"
+                    style="@style/AudioActionIconButton"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:contentDescription="@string/play"
+                    android:src="@drawable/ic_audio_play" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/audioNext"
+                    style="@style/AudioActionIconButton"
+                    android:layout_marginEnd="14dp"
+                    android:contentDescription="@string/play_next"
+                    android:src="@drawable/ic_audio_next" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/audioQueueAction"
+                    style="@style/AudioActionIconButton"
+                    android:contentDescription="@string/player_audio_playlist"
+                    android:src="@drawable/ic_audio_queue" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/audioActionRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/audioLyricsAction"
+                    style="@style/VideoActionButton"
+                    android:layout_marginEnd="4dp"
+                    app:drawableTopCompat="@drawable/ic_audio_lyrics"
+                    android:text="@string/player_lyrics_search" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/audioMoreAction"
+                    style="@style/VideoActionButton"
+                    app:drawableTopCompat="@drawable/ic_audio_more"
+                    android:text="@string/player_audio_more" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/audioBackgroundAction"
+        android:layout_width="92dp"
+        android:layout_height="142dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-18dp"
+        android:layout_marginEnd="-26dp"
+        android:background="@null"
+        android:contentDescription="@string/player_audio_background"
+        android:padding="0dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/audio_background_drip" />
+
+</FrameLayout>

@@ -1,0 +1,492 @@
+package com.fongmi.android.tv.server.process;
+
+import android.text.TextUtils;
+
+import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.Constant;
+import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.api.config.VodConfig;
+import com.fongmi.android.tv.bean.Backup;
+import com.fongmi.android.tv.bean.Config;
+import com.fongmi.android.tv.bean.Device;
+import com.fongmi.android.tv.bean.History;
+import com.fongmi.android.tv.bean.Keep;
+import com.fongmi.android.tv.bean.SyncOptions;
+import com.fongmi.android.tv.bean.Vod;
+import com.fongmi.android.tv.event.CastEvent;
+import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.event.ServerEvent;
+import com.fongmi.android.tv.impl.Callback;
+import com.fongmi.android.tv.server.Nano;
+import com.fongmi.android.tv.server.Server;
+import com.fongmi.android.tv.server.impl.Process;
+import com.fongmi.android.tv.service.PlaybackService;
+import com.fongmi.android.tv.utils.FileUtil;
+import com.fongmi.android.tv.utils.LoginStateSync;
+import com.fongmi.android.tv.utils.Notify;
+import com.fongmi.android.tv.utils.ProgressRequestBody;
+import com.fongmi.android.tv.utils.ResUtil;
+import com.fongmi.android.tv.utils.SyncFiles;
+import com.fongmi.android.tv.utils.Task;
+import com.github.catvod.net.OkHttp;
+import com.github.catvod.crawler.SpiderDebug;
+import com.github.catvod.utils.Path;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.MessageDigest;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.IHTTPSession;
+import fi.iki.elonen.NanoHTTPD.Response;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+
+public class Action implements Process {
+
+    private static final MediaType ZIP = MediaType.parse("application/zip");
+    private static final String APK_PART = "apk";
+
+    @Override
+    public boolean isRequest(IHTTPSession session, String url) {
+        return url.startsWith("/action");
+    }
+
+    @Override
+    public Response doResponse(IHTTPSession session, String url, Map<String, String> files) {
+        Map<String, String> params = session.getParms();
+        String param = params.get("do");
+        SpiderDebug.log("action", "do=%s keys=%s", param, params.keySet());
+        return TextUtils.isEmpty(param) ? Nano.ok() : doJob(param, params, files);
+    }
+
+    private Response doJob(String param, Map<String, String> params, Map<String, String> files) {
+        return switch (param) {
+            case "file" -> {
+                onFile(params);
+                yield Nano.ok();
+            }
+            case "push" -> {
+                onPush(params);
+                yield Nano.ok();
+            }
+            case "cast" -> {
+                onCast(params);
+                yield Nano.ok();
+            }
+            case "sync" -> onSync(params, files);
+            case "apk" -> onApk(params, files);
+            case "apk_url" -> onApkUrl(params);
+            case "search" -> {
+                onSearch(params);
+                yield Nano.ok();
+            }
+            case "setting" -> {
+                onSetting(params);
+                yield Nano.ok();
+            }
+            case "refresh" -> {
+                onRefresh(params);
+                yield Nano.ok();
+            }
+            case "control" -> onControl(params);
+            case "danmaku" -> {
+                onDanmaku(params);
+                yield Nano.ok();
+            }
+            default -> Nano.ok();
+        };
+    }
+
+    private void onFile(Map<String, String> params) {
+        String path = params.get("path");
+        if (TextUtils.isEmpty(path)) return;
+        if (path.endsWith(".apk")) FileUtil.openFile(Path.local(path));
+        else if (path.endsWith(".srt") || path.endsWith(".ssa") || path.endsWith(".ass")) RefreshEvent.subtitle(path);
+        else ServerEvent.setting(path);
+    }
+
+    private void onPush(Map<String, String> params) {
+        String url = params.get("url");
+        if (TextUtils.isEmpty(url)) return;
+        ServerEvent.push(url);
+    }
+
+    private Response onApk(Map<String, String> params, Map<String, String> files) {
+        File target = null;
+        try {
+            if (files == null || !files.containsKey(APK_PART)) throw new IllegalArgumentException("Missing APK file");
+            String name = sanitizeApkName(params.get("name"));
+            if (!name.toLowerCase(Locale.ROOT).endsWith(".apk")) throw new IllegalArgumentException("Invalid APK name");
+            File source = new File(files.get(APK_PART));
+            long expectedSize = parseLong(params.get("size"));
+            if (!source.isFile() || source.length() <= 0) throw new IllegalArgumentException("Empty APK file");
+            if (expectedSize > 0 && source.length() != expectedSize) throw new IllegalArgumentException("APK size mismatch");
+            String expectedSha256 = params.get("sha256");
+            if (!TextUtils.isEmpty(expectedSha256) && !expectedSha256.equalsIgnoreCase(sha256(source))) throw new IllegalArgumentException("APK checksum mismatch");
+            if (App.get().getPackageManager().getPackageArchiveInfo(source.getAbsolutePath(), 0) == null) throw new IllegalArgumentException("Invalid APK package");
+            long available = FileUtil.getAvailableStorageSpace(Path.cache());
+            if (available > 0 && source.length() + 16L * 1024 * 1024 > available) throw new IllegalStateException("Insufficient storage");
+            target = Path.cache("pushed-" + System.currentTimeMillis() + ".apk");
+            Path.copy(source, target);
+            if (target.length() != source.length()) throw new IllegalStateException("APK copy incomplete");
+            File installFile = target;
+            Device senderDevice = Device.objectFrom(params.get("device"));
+            String sender = senderDevice == null ? "" : senderDevice.getName();
+            SpiderDebug.log("apk-push", "received name=%s size=%d sender=%s", name, target.length(), sender);
+            App.post(() -> {
+                try {
+                    FileUtil.openFile(installFile);
+                } catch (Exception e) {
+                    Path.clear(installFile);
+                    Notify.show(e.getMessage());
+                }
+            });
+            Task.schedule(() -> Path.clear(installFile), 30, TimeUnit.MINUTES);
+            return Nano.ok("APK received");
+        } catch (Exception e) {
+            if (target != null) Path.clear(target);
+            SpiderDebug.log("apk-push", e);
+            return Nano.error(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    private Response onApkUrl(Map<String, String> params) {
+        try {
+            Device senderDevice = Device.objectFrom(params.get("device"));
+            String sender = senderDevice == null ? "" : senderDevice.getName();
+            ApkUrlPush.StartResult result = ApkUrlPush.get().start(params.get("url"), sender);
+            if (result == ApkUrlPush.StartResult.BUSY) return Nano.error(Response.Status.CONFLICT, ResUtil.getString(R.string.apk_push_url_busy));
+            return Nano.ok("APK URL accepted");
+        } catch (IllegalArgumentException e) {
+            return Nano.error(Response.Status.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            SpiderDebug.log("apk-push-url", e);
+            return Nano.error(ResUtil.getString(R.string.apk_push_url_schedule_failed));
+        }
+    }
+
+    private String sanitizeApkName(String name) {
+        if (TextUtils.isEmpty(name)) return "app.apk";
+        return name.replace('\\', '_').replace('/', '_').replace('\u0000', '_').trim();
+    }
+
+    private long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    private String sha256(File file) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (FileInputStream input = new FileInputStream(file)) {
+            byte[] buffer = new byte[64 * 1024];
+            int count;
+            while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count);
+        }
+        StringBuilder result = new StringBuilder();
+        for (byte value : digest.digest()) result.append(String.format(Locale.ROOT, "%02x", value));
+        return result.toString();
+    }
+
+    private void onSearch(Map<String, String> params) {
+        String word = params.get("word");
+        if (TextUtils.isEmpty(word)) return;
+        ServerEvent.search(word);
+    }
+
+    private void onSetting(Map<String, String> params) {
+        String text = params.get("text");
+        String name = params.get("name");
+        if (TextUtils.isEmpty(text)) return;
+        ServerEvent.setting(text, name);
+    }
+
+    private void onRefresh(Map<String, String> params) {
+        String type = params.get("type");
+        String path = params.get("path");
+        String json = params.get("json");
+        if (TextUtils.isEmpty(type)) return;
+        switch (type) {
+            case "home" -> RefreshEvent.home();
+            case "live" -> RefreshEvent.live();
+            case "detail" -> RefreshEvent.detail();
+            case "player" -> RefreshEvent.player();
+            case "category" -> RefreshEvent.category();
+            case "danmaku" -> RefreshEvent.danmaku(path);
+            case "subtitle" -> RefreshEvent.subtitle(path);
+            case "vod" -> RefreshEvent.vod(Vod.objectFrom(json));
+        }
+    }
+
+    private Response onControl(Map<String, String> params) {
+        String requested = params.get("type");
+        if (TextUtils.isEmpty(requested)) return Nano.error(Response.Status.BAD_REQUEST, "Missing control type");
+        // Older clients used loop; keep it as an alias for the existing repeat command.
+        String type = "loop".equalsIgnoreCase(requested) ? "repeat" : requested.toLowerCase(Locale.ROOT);
+        if (!List.of("play", "pause", "stop", "prev", "next", "repeat", "replay").contains(type)) return Nano.error(Response.Status.BAD_REQUEST, "Unsupported control type");
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicBoolean executed = new java.util.concurrent.atomic.AtomicBoolean(false);
+        java.util.concurrent.atomic.AtomicBoolean failed = new java.util.concurrent.atomic.AtomicBoolean(false);
+        try {
+            App.post(() -> {
+                try {
+                    // The service may be destroyed between the request thread and here, so the
+                    // reference has to be taken on the main thread or it points at a released player.
+                    PlaybackService service = Server.get().getService();
+                    if (service != null && !service.player().isReleased()) {
+                        switch (type) {
+                            case "play" -> service.player().play();
+                            case "pause" -> service.player().pause();
+                            case "stop" -> service.dispatchStop();
+                            case "prev" -> service.dispatchPrev();
+                            case "next" -> service.dispatchNext();
+                            case "repeat" -> service.dispatchRepeat();
+                            case "replay" -> service.dispatchReplay();
+                        }
+                        executed.set(true);
+                    }
+                } catch (Throwable error) {
+                    failed.set(true);
+                    SpiderDebug.log("action", "control failed type=%s", type);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        } catch (Throwable error) {
+            failed.set(true);
+            latch.countDown();
+        }
+        boolean completed = false;
+        try {
+            completed = latch.await(1500, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+        }
+        com.google.gson.JsonObject result = new com.google.gson.JsonObject();
+        result.addProperty("accepted", !failed.get());
+        result.addProperty("executed", executed.get());
+        result.addProperty("pending", !completed && !failed.get());
+        result.addProperty("type", type);
+        return NanoHTTPD.newFixedLengthResponse(Response.Status.OK, "application/json; charset=utf-8", result.toString());
+    }
+
+    private void onDanmaku(Map<String, String> params) {
+        String text = params.get("text");
+        PlaybackService service = Server.get().getService();
+        if (service == null || TextUtils.isEmpty(text)) return;
+        App.post(() -> service.player().sendDanmaku(text));
+    }
+
+    private void onCast(Map<String, String> params) {
+        Config config = Config.objectFrom(params.get("config"));
+        Device device = Device.objectFrom(params.get("device"));
+        History history = History.objectFrom(params.get("history"));
+        CastEvent.post(Config.find(config), device, history);
+    }
+
+    private Response onSync(Map<String, String> params, Map<String, String> files) {
+        try {
+            String type = params.get("type");
+            boolean force = Objects.equals(params.get("force"), "true");
+            String mode = Objects.requireNonNullElse(params.get("mode"), "0");
+            boolean success = true;
+            if (params.get("device") != null && (mode.equals("0") || mode.equals("2"))) {
+                Device device = Device.objectFrom(LoginStateSync.decryptText(params.get("device")));
+                if ("history".equals(type)) success = sendHistory(device, params);
+                else if ("keep".equals(type)) success = sendKeep(device);
+                else if ("backup".equals(type)) success = sendBackup(device, params);
+            }
+            if (mode.equals("0") || mode.equals("1")) {
+                if ("history".equals(type)) syncHistory(params, force);
+                else if ("keep".equals(type)) syncKeep(params, force);
+                else if ("backup".equals(type)) syncBackup(params, files, force);
+            }
+            return success ? Nano.ok() : Nano.error(ResUtil.getString(R.string.sync_failed));
+        } catch (Exception e) {
+            SpiderDebug.log("sync", e);
+            return Nano.error(Notify.getError(R.string.sync_failed, e));
+        }
+    }
+
+    private boolean post(Device device, String type, FormBody.Builder body) {
+        return post(device, type, body.build());
+    }
+
+    private boolean post(Device device, String type, RequestBody body) {
+        try {
+            String url = device.getIp().concat("/action?do=sync&mode=0&type=" + type);
+            if (!TextUtils.isEmpty(device.getToken())) url = url + "&token=" + device.getToken();
+            try (okhttp3.Response response = OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC_TRANSFER), url, body).execute()) {
+                if (response.isSuccessful()) return true;
+                throw new IllegalStateException(response.message());
+            }
+        } catch (Exception e) {
+            App.post(() -> Notify.show(e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean sendHistory(Device device, Map<String, String> params) {
+        try {
+            Config config = Config.find(Config.objectFrom(params.get("config")));
+            if (config.getUrl() == null) config = Config.vod();
+            FormBody.Builder body = new FormBody.Builder();
+            body.add("config", config.toString());
+            body.add("targets", App.gson().toJson(History.get(config.getId())));
+            return post(device, "history", body);
+        } catch (Exception e) {
+            App.post(() -> Notify.show(e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean sendKeep(Device device) {
+        try {
+            FormBody.Builder body = new FormBody.Builder();
+            body.add("targets", App.gson().toJson(Keep.getVod()));
+            body.add("configs", App.gson().toJson(Config.findUrls()));
+            return post(device, "keep", body);
+        } catch (Exception e) {
+            App.post(() -> Notify.show(e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean sendBackup(Device device, Map<String, String> params) {
+        try {
+            SyncOptions options = SyncOptions.objectFrom(params.get("options"));
+            SyncFiles.Archive archive = options.isSpider() ? SyncFiles.createArchive(SyncFiles.getPaths(options.getPaths())) : null;
+            LoginStateSync.Archive loginArchive = options.isLoginState() ? LoginStateSync.createArchive() : null;
+            try {
+                return post(device, "backup", getBackupBody(options, archive, loginArchive));
+            } finally {
+                if (archive != null) archive.delete();
+                if (loginArchive != null) loginArchive.delete();
+            }
+        } catch (Exception e) {
+            App.post(() -> Notify.show(e.getMessage()));
+            return false;
+        }
+    }
+
+    private RequestBody getBackupBody(SyncOptions options, SyncFiles.Archive archive, LoginStateSync.Archive loginArchive) {
+        if (archive == null && loginArchive == null) {
+            FormBody.Builder body = new FormBody.Builder();
+            body.add("options", options.toString());
+            body.add("backup", Backup.create(options).toString());
+            return body.build();
+        }
+        MultipartBody.Builder body = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        body.addFormDataPart("options", options.toString());
+        body.addFormDataPart("backup", Backup.create(options).toString());
+        if (archive != null) {
+            body.addFormDataPart(SyncFiles.PART_NAME, archive.getFile().getName(), new ProgressRequestBody(archive.getFile(), ZIP, null));
+        }
+        if (loginArchive != null) {
+            body.addFormDataPart(LoginStateSync.PART_NAME, loginArchive.getFile().getName(), new ProgressRequestBody(loginArchive.getFile(), ZIP, null));
+        }
+        return body.build();
+    }
+
+    private void syncBackup(Map<String, String> params, Map<String, String> files, boolean force) {
+        Backup backup = Backup.objectFrom(params.get("backup"));
+        SyncOptions options = SyncOptions.objectFrom(params.get("options"));
+        // A broken/null backup JSON parses into an empty Backup; restoring it with force=true
+        // would wipe every local site/live/config row. Fail the sync instead.
+        if (options.isConfig() && backup.getConfig().isEmpty()) throw new IllegalStateException("Backup missing interface config data");
+        if (options.isSpider() && files.containsKey(SyncFiles.PART_NAME)) {
+            File archive = new File(files.get(SyncFiles.PART_NAME));
+            try {
+                SyncFiles.restoreArchive(archive);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            } finally {
+                Path.clear(archive);
+            }
+        }
+        if (options.isLoginState() && files.containsKey(LoginStateSync.PART_NAME)) {
+            File archive = new File(files.get(LoginStateSync.PART_NAME));
+            try {
+                File decrypted = LoginStateSync.decryptArchive(archive);
+                try {
+                    LoginStateSync.restoreArchive(decrypted);
+                } finally {
+                    if (!decrypted.equals(archive)) Path.clear(decrypted);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            } finally {
+                Path.clear(archive);
+            }
+        }
+        backup.restore(options, force);
+        App.post(() -> Notify.show(R.string.sync_receive_success));
+    }
+
+    public void syncHistory(Map<String, String> params, boolean force) {
+        Config config = Config.find(Config.objectFrom(params.get("config")));
+        List<History> targets = History.arrayFrom(params.get("targets"));
+        if (config.getUrl() == null) return;
+        if (config.getUrl().equals(VodConfig.getUrl())) {
+            if (force) History.delete(config.getId());
+            History.sync(targets);
+            RefreshEvent.history();
+        } else {
+            VodConfig.load(config, getCallback(targets, force, config.getId()));
+        }
+    }
+
+    private Callback getCallback(List<History> targets, boolean force, int cid) {
+        return new Callback() {
+            @Override
+            public void success() {
+                if (force) History.delete(cid);
+                History.sync(targets);
+                RefreshEvent.history();
+            }
+
+            @Override
+            public void error(String msg) {
+                Notify.show(msg);
+            }
+        };
+    }
+
+    private void syncKeep(Map<String, String> params, boolean force) {
+        List<Keep> targets = Keep.arrayFrom(params.get("targets"));
+        List<Config> configs = Config.arrayFrom(params.get("configs"));
+        if (TextUtils.isEmpty(VodConfig.getUrl()) && !configs.isEmpty()) {
+            VodConfig.load(Config.find(configs.get(0)), getCallback(configs, targets, force));
+        } else {
+            if (force) Keep.deleteAll();
+            Keep.sync(configs, targets);
+            RefreshEvent.keep();
+        }
+    }
+
+    private Callback getCallback(List<Config> configs, List<Keep> targets, boolean force) {
+        return new Callback() {
+            @Override
+            public void success() {
+                if (force) Keep.deleteAll();
+                Keep.sync(configs, targets);
+                RefreshEvent.keep();
+            }
+
+            @Override
+            public void error(String msg) {
+                Notify.show(msg);
+            }
+        };
+    }
+}

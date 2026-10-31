@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebHomeTV — 影视播放器壳子</title>
+<meta name="description" content="WebHomeTV 是基于 FongMi / CatVod 生态增强维护的 Android 影音播放器壳子，支持多内核播放、WebHome 自定义首页、局域网同步与安全加固。">
+<meta property="og:title" content="WebHomeTV — 影视播放器壳子">
+<meta property="og:description" content="多内核播放 · WebHome 首页 · 局域网同步 · 安全加固">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --blue: #0066cc;
+    --blue-focus: #0071e3;
+    --blue-on-dark: #2997ff;
+    --canvas: #ffffff;
+    --parchment: #f5f5f7;
+    --pearl: #fafafc;
+    --tile-1: #272729;
+    --ink: #1d1d1f;
+    --body-on-dark: #ffffff;
+    --body-muted: #cccccc;
+    --ink-muted-48: #7a7a7a;
+    --hairline: #e0e0e0;
+    --divider-soft: #f0f0f0;
+    --product-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.22);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    --section: 80px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    background: var(--canvas);
+    color: var(--ink);
+    line-height: 1.47;
+    letter-spacing: -0.374px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1068px; margin: 0 auto; padding: 0 24px; }
+  .container-wide { max-width: 1440px; margin: 0 auto; padding: 0 32px; }
+
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- Global Nav ---------- */
+  .global-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: #000000;
+    height: 44px;
+    display: flex; align-items: center;
+  }
+  .global-nav .container-wide {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%;
+  }
+  .brand { font-size: 14px; font-weight: 600; color: var(--body-on-dark); letter-spacing: 0; }
+  .brand:hover { text-decoration: none; opacity: 0.8; }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-links a { font-size: 12px; color: var(--body-on-dark); letter-spacing: -0.12px; }
+  .nav-links a:hover { text-decoration: none; color: var(--blue-on-dark); }
+
+  /* ---------- Hero (light tile) ---------- */
+  .hero { padding: var(--section) 0; background: var(--canvas); }
+  .hero .container { text-align: center; }
+  .hero .sub {
+    display: inline-block;
+    font-size: 14px; font-weight: 600; color: var(--blue);
+    border: 1px solid var(--hairline);
+    border-radius: 9999px;
+    padding: 6px 16px;
+    margin-bottom: 32px;
+    background: var(--pearl);
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 56px; font-weight: 600;
+    line-height: 1.07; letter-spacing: -0.28px;
+    color: var(--ink);
+    max-width: 16ch; margin: 0 auto 24px;
+  }
+  .hero .lead {
+    font-size: 21px; font-weight: 600;
+    line-height: 1.19; letter-spacing: 0.231px;
+    color: var(--ink);
+    max-width: 40ch; margin: 0 auto 40px;
+  }
+  .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font); font-size: 17px; font-weight: 400;
+    border-radius: 9999px; min-height: 44px; padding: 11px 22px;
+    cursor: pointer; transition: transform 160ms ease, background 160ms ease;
+    text-decoration: none;
+  }
+  .btn:focus-visible { outline: 2px solid var(--blue-focus); outline-offset: 2px; }
+  .btn:active { transform: scale(0.95); }
+  .btn-primary { background: var(--blue); color: #ffffff; }
+  .btn-primary:hover { background: var(--blue-focus); text-decoration: none; }
+  .btn-secondary { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
+  .btn-secondary:hover { background: rgba(0, 102, 204, 0.05); text-decoration: none; }
+
+  /* Terminal card — product evidence */
+  .terminal {
+    background: #000000;
+    border-radius: 18px;
+    overflow: hidden;
+    text-align: left;
+    margin: 56px auto 0;
+    max-width: 560px;
+    box-shadow: var(--product-shadow);
+  }
+  .terminal-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .terminal-bar .t-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .t-dot.r { background: #FF5F56; } .t-dot.y { background: #FFBD2E; } .t-dot.g { background: #27C93F; }
+  .terminal-bar .t-title { color: var(--body-muted); font-size: 12px; margin-left: 8px; }
+  .terminal-body { padding: 24px; color: #a1a1a6; font-size: 14px; line-height: 2; font-family: ui-monospace, "SF Mono", monospace; }
+  .terminal-body .prompt { color: var(--blue-on-dark); }
+  .terminal-body .cmd { color: var(--body-on-dark); }
+  .terminal-body .out { color: #30d158; }
+  .terminal-body .muted { color: #6e6e73; }
+
+  /* ---------- Section rhythm ---------- */
+  section.tile-light { background: var(--canvas); padding: var(--section) 0; }
+  section.tile-parchment { background: var(--parchment); padding: var(--section) 0; }
+  section.tile-dark { background: var(--tile-1); padding: var(--section) 0; }
+  section.tile-dark h2, section.tile-dark p.sec-desc { color: var(--body-on-dark); }
+  section.tile-dark .sec-desc { color: var(--body-muted); }
+
+  .sec-head { text-align: center; margin-bottom: 56px; }
+  .sec-head h2 {
+    font-family: var(--font-display);
+    font-size: 40px; font-weight: 600; line-height: 1.10;
+    color: var(--ink); margin-bottom: 16px;
+  }
+  .tile-dark .sec-head h2 { color: var(--body-on-dark); }
+  .sec-head p.sec-desc { font-size: 21px; font-weight: 600; color: var(--ink); line-height: 1.19; max-width: 44ch; margin: 0 auto; }
+  .tile-dark .sec-head p.sec-desc { color: var(--body-muted); }
+
+  /* ---------- Feature cards (utility grid) ---------- */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .card {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    padding: 24px;
+    transition: transform 160ms ease;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card .ico { font-size: 28px; margin-bottom: 16px; }
+  .card h3 { font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .card p { font-size: 17px; color: #515154; line-height: 1.47; }
+  .card code {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 13px;
+    background: var(--parchment);
+    border-radius: 5px; padding: 2px 6px; color: var(--blue);
+  }
+
+  /* ---------- Kernels (dark tile) ---------- */
+  .kernels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .kernel {
+    background: #2a2a2c;
+    border-radius: 18px;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .kernel .k-name { font-size: 34px; font-weight: 600; color: var(--body-on-dark); margin-bottom: 12px; letter-spacing: -0.374px; }
+  .kernel .k-name.blue { color: var(--blue-on-dark); }
+  .kernel p { font-size: 17px; color: var(--body-muted); }
+  .kernel .tag {
+    display: inline-block; margin-top: 16px;
+    font-size: 14px; font-weight: 400; color: var(--body-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px; padding: 6px 14px;
+  }
+
+  /* ---------- Config code block ---------- */
+  .code-block {
+    background: #1d1d1f;
+    border-radius: 18px;
+    padding: 28px;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 14px; line-height: 1.9;
+    overflow-x: auto;
+    color: #f5f5f7;
+  }
+  .code-block .cmt { color: #6e6e73; }
+  .code-block .key { color: var(--blue-on-dark); }
+  .code-block .str { color: #30d158; }
+
+  /* ---------- Download ---------- */
+  .dl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .dl-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: 18px; padding: 20px 24px;
+    transition: border-color 160ms ease;
+  }
+  .dl-row:hover { border-color: var(--blue); }
+  .dl-name { font-family: ui-monospace, "SF Mono", monospace; font-size: 13px; color: var(--ink); }
+  .dl-desc { font-size: 14px; color: var(--ink-muted-48); margin-top: 2px; }
+  .dl-btn {
+    font-size: 14px; font-weight: 400; color: var(--blue);
+    border: 1px solid var(--blue); border-radius: 9999px;
+    padding: 8px 16px; white-space: nowrap;
+    transition: background 160ms ease;
+  }
+  .dl-btn:hover { background: rgba(0, 102, 204, 0.05); text-decoration: none; }
+
+  /* ---------- Security (parchment) ---------- */
+  .tile-parchment .card { background: var(--canvas); border-color: var(--divider-soft); }
+
+  /* ---------- CTA (dark) ---------- */
+  .cta h2 { font-size: 34px; font-weight: 600; color: var(--body-on-dark); margin-bottom: 16px; letter-spacing: -0.374px; }
+  .cta p { font-size: 21px; font-weight: 600; color: var(--body-muted); margin-bottom: 32px; }
+  .cta .btn-primary { background: var(--blue); }
+  .cta .btn-secondary { color: var(--blue-on-dark); border-color: var(--blue-on-dark); }
+
+  /* ---------- Footer ---------- */
+  footer { background: var(--parchment); padding: 64px 0; }
+  footer .container { display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+  footer .copy { font-size: 12px; color: var(--ink-muted-48); line-height: 1.0; }
+  footer .links { display: flex; gap: 24px; }
+  footer .links a { font-size: 17px; color: var(--ink); line-height: 2.41; }
+  footer .links a:hover { color: var(--blue); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 833px) {
+    .nav-links { display: none; }
+    .grid, .kernels { grid-template-columns: repeat(2, 1fr); }
+    .dl-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 34px; }
+    .sec-head h2 { font-size: 32px; }
+    .grid, .kernels { grid-template-columns: 1fr; }
+    section.tile-light, section.tile-parchment, section.tile-dark { padding: 48px 0; }
+    .hero { padding: 48px 0; }
+  }
+  @media (max-width: 419px) {
+    .hero h1 { font-size: 28px; }
+    .container, .container-wide { padding: 0 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="global-nav" aria-label="主导航">
+  <div class="container-wide">
+    <div class="brand">webtv</div>
+    <div class="nav-links">
+      <a href="#features">特性</a>
+      <a href="#kernels">内核</a>
+      <a href="#config">配置</a>
+      <a href="#remote">遥控</a>
+      <a href="#download">下载</a>
+      <a href="#security">安全</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="container">
+    <span class="sub">v5.17.2 · targetSdk 37 · 已发布</span>
+    <h1>影视播放器壳子，把内容交给你。</h1>
+    <p class="lead">基于 FongMi / CatVod 生态增强维护。源、站点、接口全由你掌控，壳子负责播放得流畅、管理得省心。</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#download">下载 APK</a>
+      <a class="btn btn-secondary" href="#features">查看特性</a>
+    </div>
+    <div class="terminal" role="img" aria-label="终端命令行示例">
+      <div class="terminal-bar">
+        <span class="t-dot r"></span><span class="t-dot y"></span><span class="t-dot g"></span>
+        <span class="t-title">webtv — install &amp; go</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> <span class="cmd">adb install mobile-arm64_v8a.apk</span></div>
+        <div><span class="out">✔ Success</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">导入你的 tv 配置 URL</span></div>
+        <div><span class="out">✔ 配置校验通过 · 152 个站点 · 直播已就绪</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">开始播放</span></div>
+        <div><span class="out">✔ EXO → READY <span class="muted">· #multi-kernel</span></span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="tile-light" id="features">
+  <div class="container">
+    <div class="sec-head">
+      <h2>不止是播放器</h2>
+      <p class="sec-desc">围绕「让你更容易把自己的配置用起来」设计。</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="ico">🗂️</div>
+        <h3>配置导入增强</h3>
+        <p>导入前预检，失败不覆盖当前配置。支持 URL、文件、assets 三种来源。</p>
+      </div>
+      <div class="card">
+        <div class="ico">🔄</div>
+        <h3>一键同步</h3>
+        <p>局域网同步配置、历史、收藏、WebHome、登录态，跨设备迁移网盘登录态。</p>
+      </div>
+      <div class="card">
+        <div class="ico">▶️</div>
+        <h3>播放连续性</h3>
+        <p>换源、换集、解析播放后保持进度与倍速一致，续播不中断。</p>
+      </div>
+      <div class="card">
+        <div class="ico">🌐</div>
+        <h3>WebHome 首页</h3>
+        <p>每个 CSP 站点可配置独立网页首页，网页可调用原生播放能力。</p>
+      </div>
+      <div class="card">
+        <div class="ico">🎛️</div>
+        <h3>多内核切换</h3>
+        <p>EXO / IJK / MPV 自由切换，默认 EXO，兼容不同片源与设备。</p>
+      </div>
+      <div class="card">
+        <div class="ico">📊</div>
+        <h3>协议兼容</h3>
+        <p>已接入 Force、JianPian、Thunder、TVBus 等 FongMi 协议扩展。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tile-dark" id="kernels">
+  <div class="container">
+    <div class="sec-head">
+      <h2>三种内核，一个壳子</h2>
+      <p class="sec-desc">针对不同片源和设备场景，选择最合适的解码方式。</p>
+    </div>
+    <div class="kernels">
+      <div class="kernel">
+        <div class="k-name blue">EXO</div>
+        <p>Media3 官方播放器，格式兼容性最好，默认内核。</p>
+        <span class="tag">默认</span>
+      </div>
+      <div class="kernel">
+        <div class="k-name">IJK</div>
+        <p>软硬解自适应，适合老设备与特殊编码片源。</p>
+      </div>
+      <div class="kernel">
+        <div class="k-name">MPV</div>
+        <p>更强的音视频滤镜与颜色控制，进阶玩家之选。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tile-light" id="config">
+  <div class="container">
+    <div class="sec-head">
+      <h2>配置即一切</h2>
+      <p class="sec-desc">站点、接口、直播、壁纸、WebHome —— 全在一个 JSON 里。</p>
+    </div>
+    <div class="code-block" role="img" aria-label="tv 配置 JSON 示例">
+<span class="cmt">// tv api.json — 你自己掌控的来源</span>
+{
+  <span class="key">"sites"</span>: [<span class="str">"152 个站点"</span>],
+  <span class="key">"lives"</span>: [<span class="str">"直播源已就绪"</span>],
+  <span class="key">"wallpaper"</span>: <span class="str">"http://…/wallpaper"</span>,
+  <span class="key">"allowedOrigins"</span>: [<span class="str">"https://…"</span>]
+}
+    </div>
+  </div>
+</section>
+
+<section class="tile-dark" id="remote">
+  <div class="container">
+    <div class="sec-head">
+      <h2>手机打开网页，就能控制电视</h2>
+      <p class="sec-desc">同网段使用局域网管理页；跨网络使用你自己部署的 HTTPS 中转服务。两种方式都需要授权。</p>
+    </div>
+    <div class="kernels">
+      <div class="kernel">
+        <div class="k-name blue">01 · 连接</div>
+        <p>局域网复制 App 管理地址。公网遥控默认关闭，先部署服务，再在被控设备中配置并开启。</p>
+      </div>
+      <div class="kernel">
+        <div class="k-name">02 · 配对</div>
+        <p>公网控制台输入设备生成的限时单次配对码；设备授权可撤销，不公开本地管理端口。</p>
+      </div>
+      <div class="kernel">
+        <div class="k-name">03 · 控制</div>
+        <p>搜索、推送播放地址、暂停、上下集、重播及读取播放状态。设备必须在线且具备可用播放器。</p>
+      </div>
+    </div>
+    <p style="margin-top:24px;color:#ccc">不提供公共遥控服务器，不开放远程安装、文件访问或登录态提取。<a style="color:#8db9ff" href="https://github.com/motao123/webtv/tree/main/serverless/webtv-remote-go">查看自托管部署说明</a></p>
+  </div>
+</section>
+
+<section class="tile-parchment" id="download">
+  <div class="container">
+    <div class="sec-head">
+      <h2>下载</h2>
+      <p class="sec-desc">最新版本 <strong style="color:var(--blue)">v5.17.2</strong> · 不确定 CPU 架构时优先选择 universal 通用包；精简版去掉 MPV 内核与 Python 运行时，体积约减半（手机端与 TV 端都有）。</p>
+    </div>
+    <div class="dl-grid">
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">mobile-arm64_v8a-5.17.2.apk</div>
+          <div class="dl-desc">Android 手机 · 新设备</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/mobile-arm64_v8a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">mobile-universal-5.17.2.apk</div>
+          <div class="dl-desc">Android 手机 · 不确定架构</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/mobile-universal-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">leanback-arm64_v8a-5.17.2.apk</div>
+          <div class="dl-desc">Android TV · 新电视盒子</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/leanback-arm64_v8a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">leanback-universal-5.17.2.apk</div>
+          <div class="dl-desc">Android TV · 不确定架构</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/leanback-universal-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">mobile-armeabi_v7a-5.17.2.apk</div>
+          <div class="dl-desc">Android 手机 · 老设备</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/mobile-armeabi_v7a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">leanback-armeabi_v7a-5.17.2.apk</div>
+          <div class="dl-desc">Android TV · 老盒子</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/leanback-armeabi_v7a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">mobile-lite-arm64_v8a-5.17.2.apk</div>
+          <div class="dl-desc">Android 手机 · 精简版 · 新设备（约 56MB）</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/mobile-lite-arm64_v8a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">mobile-lite-universal-5.17.2.apk</div>
+          <div class="dl-desc">Android 手机 · 精简版 · 不确定架构（约 88MB）</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/mobile-lite-universal-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">leanback-lite-arm64_v8a-5.17.2.apk</div>
+          <div class="dl-desc">Android TV · 精简版 · 新电视盒子</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/leanback-lite-arm64_v8a-5.17.2.apk">下载</a>
+      </div>
+      <div class="dl-row">
+        <div>
+          <div class="dl-name">leanback-lite-universal-5.17.2.apk</div>
+          <div class="dl-desc">Android TV · 精简版 · 不确定架构</div>
+        </div>
+        <a class="dl-btn" href="https://github.com/motao123/webtv/releases/latest/download/leanback-lite-universal-5.17.2.apk">下载</a>
+      </div>
+    </div>
+    <p style="margin-top:24px;font-size:14px;color:var(--ink-muted-48)">更多版本与更新说明见 <a href="https://github.com/motao123/webtv/releases">GitHub Releases</a></p>
+  </div>
+</section>
+
+<section class="tile-light" id="security">
+  <div class="container">
+    <div class="sec-head">
+      <h2>安全加固</h2>
+      <p class="sec-desc">v5.6.0 依据代码审计结果完成高危项修复。</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>认证收紧</h3>
+        <p>本地 HTTP 写操作强制 token，播放记录/进度端点纳入保护，DNS rebinding 防护。</p>
+      </div>
+      <div class="card">
+        <h3>SSRF 拦截</h3>
+        <p>Web 资源网关、Webhook、网盘检测、MPV 代理均拒绝内网地址，重定向逐跳校验。</p>
+      </div>
+      <div class="card">
+        <h3>CORS 白名单</h3>
+        <p>播放进度/记录/网盘检测接口不再反射任意 Origin，仅本地回环可携带凭据。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tile-dark cta">
+  <div class="container" style="text-align:center">
+    <h2>把内容交给壳子，把播放交给 webtv。</h2>
+    <p>多内核 · WebHome · 局域网同步 · 安全加固 —— 一切都为你的源而生。</p>
+    <div class="hero-actions" style="justify-content:center">
+      <a class="btn btn-primary" href="#download">下载 APK</a>
+      <a class="btn btn-secondary" href="https://github.com/motao123/webtv">GitHub 仓库</a>
+      <a class="btn btn-secondary" href="https://cnb.cool/code_free/webtv-coding">CNB 源码镜像</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="copy">© 2026 WebHomeTV<br>本仓库只提供技术实现，不内置影视内容</div>
+    <div class="links">
+      <a href="https://github.com/motao123/webtv">GitHub</a>
+      <a href="https://github.com/motao123/webtv/releases">Releases</a>
+      <a href="https://github.com/motao123/webtv/blob/main/README.md">README</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

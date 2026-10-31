@@ -1,0 +1,525 @@
+{
+  "generated_from": "staging tree",
+  "binaries": [
+    {
+      "path": "app/src/leanback/res/drawable/ic_banner.png",
+      "bytes": 5119,
+      "sha256": "dbd18a62b92452a3b1c8fcdd5edbcf43b88927c747c6a1297575e956cea7e7af"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_keep.png",
+      "bytes": 2123,
+      "sha256": "52e868b328e64dc4ab29095d9cbcbe55c6196efb21a12d110b44cfbad0d9065b"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_live.png",
+      "bytes": 692,
+      "sha256": "11b76647051ffb29d435930d48f0b8b5b4f26767e06a55d0c7239da0e0afced9"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_push.png",
+      "bytes": 1014,
+      "sha256": "5f7a2494f5617660f862d8fab634b727f33fbf0e524015b5846115a179a0310e"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_search.png",
+      "bytes": 1031,
+      "sha256": "7c4ef48d4f9dba565ae116255b1332f245fcf41161feaa79c3d4c659958e7169"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_setting.png",
+      "bytes": 1075,
+      "sha256": "8f852dc56dbb8ec5f006ecf1c3e86f5d2f780bc232e774cb3c3db365884b6719"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-hdpi/ic_home_vod.png",
+      "bytes": 1178,
+      "sha256": "b1b8f8b33cf8122b69202964c57a9e82d676c6d57aa627e7def732920dacb5da"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/startup_logo.jpg",
+      "bytes": 166148,
+      "sha256": "dc28c968318e3ee1942a253f0e787e3f4e80de1c9d3ad4f0717cb6beecba42ac"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_1.webp",
+      "bytes": 9580,
+      "sha256": "52451625c878dba2497c561ddd0d2bc68feac20f73b6be540973353094cdb25a"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_2.webp",
+      "bytes": 2822,
+      "sha256": "b1fd42e2f5e487bc793af26faeb7c60e7fd2a0094c95cf562375976cfbba6add"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_3.webp",
+      "bytes": 19374,
+      "sha256": "fd352a127601594a8329ce2c56fd0ab8b75adfff788d73b3d46e8c4006c15571"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_4.webp",
+      "bytes": 15738,
+      "sha256": "f058d5a59f8040d12df8823ce537dc10fe627e43a41e810ba44015e31b03a17a"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_10_aurora_glass.webp",
+      "bytes": 15330,
+      "sha256": "5312407d02659c2ce2e5940f842893397f0389fd6ce45c4273873fa4b60258d8"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_11_sunset_prism.webp",
+      "bytes": 16116,
+      "sha256": "39af3449ce7b2a51d58e764337effff7033ef0b7019db60c26f7e65ff3d9cd7d"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_12_mint_glacier.webp",
+      "bytes": 15108,
+      "sha256": "a7d75c00e57d0da7de59a1a61ad04b0ca781a1cc23a64d98fd98e759e7914282"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_13_liquid_chrome.webp",
+      "bytes": 16084,
+      "sha256": "8c75d78b142445ba942fc9b8424a73680903b39ab8a46f4408d790b1747a4b69"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_14_neon_berry.webp",
+      "bytes": 16032,
+      "sha256": "f8adf89cd36980f09ba0db208f300c780ee69781fd486370ef8180e0f677c1d2"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_15_champagne_mist.webp",
+      "bytes": 14776,
+      "sha256": "1a0b2f2b914ac103b49d3a5b1aec5cb9328eb67085cab5368d6d6593886acb92"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_16_glass_gradient.webp",
+      "bytes": 16240,
+      "sha256": "5cfdc22e733d21e863285dbc32a44d07b1843b97bfe29915b82d56ffce52cdc4"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_17_deep_space_glass.webp",
+      "bytes": 15334,
+      "sha256": "e5e8cff2d96387e22441ed9a1d258e25a21cb9d75eb85a9ac4b9b88e6a0d25ea"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_18_polar_light_glass.webp",
+      "bytes": 15544,
+      "sha256": "c27bd75251bcd0a7cd7d6e869cfc72e5da74286e61ea6c0dc70f83b8090d91e1"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_19_neon_cyber.webp",
+      "bytes": 18792,
+      "sha256": "ae37c350e1a05d36d5bacfafc94d30f8fdb3bd50c2246c2af97636ffe9c729e1"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_20_warm_moon_glass.webp",
+      "bytes": 16168,
+      "sha256": "250ad88fc9df2190f9a3fb59d1450164d56e112b5e6389c57a418d2a4494db91"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_21_crystal_sky.webp",
+      "bytes": 14590,
+      "sha256": "ff69553c1b04a1138c84a5486420526a40af84ab1301ec2dabb5eafe28405c70"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_22_dream_purple.webp",
+      "bytes": 16530,
+      "sha256": "682924d146ab3fa1bf5020dd6dab80861033ecc32b6b82defe783bb6059ba95f"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_23_sky_mint.webp",
+      "bytes": 14530,
+      "sha256": "05786806161bd60a8524b5867461ae59bde6bb6460a175a6202429f0c984c713"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_24_forest_mist.webp",
+      "bytes": 14334,
+      "sha256": "dfad86db173d2eebf0f05dd81e466dd28765680c11c3ff1cdda470b1052ae997"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_25_daylight_minimal.webp",
+      "bytes": 14176,
+      "sha256": "e7b43148483f8e1b90d4c99d1f7979ae7a252bf2fa7e2606f1456805d9efb779"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_26_deep_sea.webp",
+      "bytes": 14732,
+      "sha256": "b52ec0395479744a8b4cbaacd79d3420030cdaef2feadbf2901db04252dbd7b5"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_27_violet_smoke.webp",
+      "bytes": 16170,
+      "sha256": "94aea97fb52e52738da2334e1d99cfd26195852fc6c6206dfaccc68e8cf5f01f"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_28_rose_veil.webp",
+      "bytes": 11172,
+      "sha256": "0f7feefa48c27469c3106532ee6939573693780b198150a3bd768911a2b83a10"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_29_emerald_aurora.webp",
+      "bytes": 12486,
+      "sha256": "d504ab1c2d76b2b0939c69625a6e6f0c849a6cc7d54d7d5c8ec129e521383b73"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_30_blue_silk.webp",
+      "bytes": 11046,
+      "sha256": "ee27be0913907926dfff241586936711af0998d5ee7386db527bb6fa2bb233e1"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_31_peach_dawn.webp",
+      "bytes": 10760,
+      "sha256": "4d28e5cd99402ba5fe75b6c401ccfad73971848cf6abf6a4908be1c1b41a6d62"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_32_graphite_smoke.webp",
+      "bytes": 10810,
+      "sha256": "adc3a46d25028161903db3ef370d507a3bb9f13464eb4d86f956a329be0ee0c7"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_33_pastel_prism.webp",
+      "bytes": 10996,
+      "sha256": "53836f78ab8d6ba0d525a2478137546543041a2d1f538c1204f31639db563aaa"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_34_midnight_moon.webp",
+      "bytes": 11706,
+      "sha256": "9328870b06b22b56091d59a86a9d5b3d70d705b5296c4038a8ca46e979fa30ca"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_35_cyan_crystal.webp",
+      "bytes": 12784,
+      "sha256": "9f6715d21ec03b6a8a88708636ef46ef55e9bb4347a9501c456386e3d6f0206f"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-nodpi/wallpaper_design_36_lavender_crystal.webp",
+      "bytes": 10524,
+      "sha256": "4e94d2ecae003028d14e8709ea943baea84ec4a0375142f57b8e0c7fc9eec6ee"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_keep.png",
+      "bytes": 3311,
+      "sha256": "a82cc671753f45d3f95a218088c3bae137410175650d80d11da4493a79c5b4f0"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_live.png",
+      "bytes": 920,
+      "sha256": "dce973665a3ec09f990e965e662c9132dc2b6bee841f22adf80de98d2381e2b6"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_push.png",
+      "bytes": 1340,
+      "sha256": "3e12bbc860f7ab80efac2db536dba7a9570a44e8a015ba50ddc247686e97798a"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_search.png",
+      "bytes": 1364,
+      "sha256": "f9fba5ceddc91e8588c4a3f8a6ae91020fc56ff3f09203386ac584b95c777d3d"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_setting.png",
+      "bytes": 1397,
+      "sha256": "239e70e4cda884127c84cde7b9c8a54746d4735e76a9fcabdb1a882b3720ba86"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xhdpi/ic_home_vod.png",
+      "bytes": 1486,
+      "sha256": "2e99a9d551739d67aa3e02db21e82e4baa15bac78a4963d2de7de154fb4d8b02"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_keep.png",
+      "bytes": 4518,
+      "sha256": "1b6b0577b0ef0a06138b5145c2f9584f734ef55ddb2e958fafb9b8564c775a3a"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_live.png",
+      "bytes": 1729,
+      "sha256": "6adb3e14f70157d365f1b31fbce2a690fc8e3a5530ae5306053c1eaa932c37f2"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_push.png",
+      "bytes": 2657,
+      "sha256": "48e2dff7ba92634cbc07b849b8b705e0ae0a85f77bdcb1cb947614ee37020c2c"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_search.png",
+      "bytes": 2718,
+      "sha256": "2a393826131c445100310870ab74f5d52db84564daee014f9b2ba4e810cc8dc1"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_setting.png",
+      "bytes": 2861,
+      "sha256": "d1267feedee3986b7c19f2ca028fb9cb13b3ae3375e6a161c770d158b7bd40e7"
+    },
+    {
+      "path": "app/src/leanback/res/drawable-xxhdpi/ic_home_vod.png",
+      "bytes": 2510,
+      "sha256": "0f72bb00c8d1c9a7129a494677c26c53ca6d00825ca68774cac26381b7460a28"
+    },
+    {
+      "path": "app/src/main/assets/favicon.ico",
+      "bytes": 15406,
+      "sha256": "9cb91257c578fbd3c9517e62390560dc9ea993b987b3a74aea54540982c46c92"
+    },
+    {
+      "path": "app/src/main/ic_launcher-playstore.png",
+      "bytes": 22979,
+      "sha256": "0db5859d661b4b05620b001ad39f8618e03f0921222a8ad46685364d3a270194"
+    },
+    {
+      "path": "app/src/main/res/drawable-hdpi/ic_notification.png",
+      "bytes": 697,
+      "sha256": "00e511563dfb6984f31acc8fde0989b917b538d0751ba002b530a4fe8deea4dc"
+    },
+    {
+      "path": "app/src/main/res/drawable-mdpi/ic_notification.png",
+      "bytes": 410,
+      "sha256": "c87b6b6fe06b7c38d85e25965098d887f419d0f7a3912c10ee5c19c1cf8e1665"
+    },
+    {
+      "path": "app/src/main/res/drawable-nodpi/artwork.webp",
+      "bytes": 92126,
+      "sha256": "06b4e084918d5f4b1bbe9f22b5bcdab6513d3bdbc7b39f7a91ac5404fcc31a12"
+    },
+    {
+      "path": "app/src/main/res/drawable-nodpi/audio_background_drip.png",
+      "bytes": 32215,
+      "sha256": "e0b2baab5d1b5927043cdf2da98483b68acb9fb5dc8ae1546498bba5a49aaa4d"
+    },
+    {
+      "path": "app/src/main/res/drawable-nodpi/ic_logo.png",
+      "bytes": 50269,
+      "sha256": "8ad8bee0ca762b88c0e10441175a49699fd7de261f47e1c9f3fecab3ccb6af00"
+    },
+    {
+      "path": "app/src/main/res/drawable-nodpi/startup_logo.jpg",
+      "bytes": 9085,
+      "sha256": "c5840b6196984261fe98562e10a35438f68d3ea06a392763f57076b53bb28642"
+    },
+    {
+      "path": "app/src/main/res/drawable-xhdpi/ic_notification.png",
+      "bytes": 852,
+      "sha256": "6f4ee782d421e1728c5852dd5f43fdf52be9c302f70cb08dcbaa22f46c6d0a31"
+    },
+    {
+      "path": "app/src/main/res/drawable-xxhdpi/ic_notification.png",
+      "bytes": 1346,
+      "sha256": "fd0308d4c3cc53da2c7091289191635b4924983b60c4a4e63484bdf8659039c5"
+    },
+    {
+      "path": "app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "bytes": 11141,
+      "sha256": "7a4c292399c83bdef21dd712d7330acaf489b583fd1f839d4eec42ffd7ba5b51"
+    },
+    {
+      "path": "app/src/main/res/mipmap-hdpi/ic_launcher_round.webp",
+      "bytes": 3020,
+      "sha256": "2a553f75d1e4a2a361e3928ed420ff6cc8cd7a8e850dee5fba3cda867df957b4"
+    },
+    {
+      "path": "app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "bytes": 6123,
+      "sha256": "5d3eaeaaf9350f935331d0303dc0d7a89f0964af505203881c89eb2ba708106a"
+    },
+    {
+      "path": "app/src/main/res/mipmap-mdpi/ic_launcher_round.webp",
+      "bytes": 1932,
+      "sha256": "d0661a711af53ca59598a0c0011a2b2740a946a45cc57f64d3ac27fec3e179d3"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "bytes": 13977,
+      "sha256": "14e83f781555a3accb6be3a9577cefba9e5c718eac3302ea58aa11b94ded0b39"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp",
+      "bytes": 4188,
+      "sha256": "293ef17539072da95552607d50131638f7bcad94bb70b7ac08648011d3202817"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "bytes": 26372,
+      "sha256": "55ccd93ec629fa5cbe0c90a3d7a42c0d720d03d615e7a141c80f61c5beabff09"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp",
+      "bytes": 6870,
+      "sha256": "4d2167d28c5ea118b1fbf47c142df86bc732472ee3f61ee0b80da9bdd0502829"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "bytes": 35287,
+      "sha256": "ebd984fc041e552c137b2f26821f3f0052bfa5ef77ab288fbcac9a02a7558e7d"
+    },
+    {
+      "path": "app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp",
+      "bytes": 9376,
+      "sha256": "4533922bf03106be8f9eeba4d3a52c83f71892684e4ba1e894903bed3a4b16c1"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_1.webp",
+      "bytes": 25120,
+      "sha256": "18e7dc39641b9ad279c23f37abd5996f2ee19e46cba48a781766d4d1188598e3"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_2.webp",
+      "bytes": 466,
+      "sha256": "c767e21131d190beb2825184a3f4df90d97a374577b811452cb9dbc9fa0aed2b"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_3.webp",
+      "bytes": 69340,
+      "sha256": "3661de9d9f39cbf2ea166512e61dc30ee58a05347f4ecd181a5d3753bacd9931"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_4.webp",
+      "bytes": 64,
+      "sha256": "8e9f21dad3c1451fd293ec37c51402b04b5eca5b8d9a15425e92cfbbdbda8436"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_10_aurora_glass.webp",
+      "bytes": 18624,
+      "sha256": "5b096a63311861656932124e32fa68ff8fc72d244c88725d87fe7c9c8e61f0d1"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_11_sunset_prism.webp",
+      "bytes": 19778,
+      "sha256": "0d971377e3e9a142d96091df3b05cd5394d823515b43df8a93a65536f1caf228"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_12_mint_glacier.webp",
+      "bytes": 18746,
+      "sha256": "5d93535b33e8804fe2820e91cbbcffca3257dd58801c62efa81ca8642ba57c11"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_13_liquid_chrome.webp",
+      "bytes": 19558,
+      "sha256": "6d7252c64fdd3e74b5928c65a9d048c99d0555827d4250cfa86f2f22e46e2545"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_14_neon_berry.webp",
+      "bytes": 20074,
+      "sha256": "1673bbcb8d09a46102633ccf9eb77ffc413a247d7619172b2006403567998a16"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_15_champagne_mist.webp",
+      "bytes": 18190,
+      "sha256": "5400089c23428120d6f47c4d9af6aa9df2bb6b530b5a239b30b05ae9cea4ed9c"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_16_glass_gradient.webp",
+      "bytes": 19200,
+      "sha256": "a888038b3b080560f22d8d73fed891f88c2e89c907ed799f072da6c65eafc3d9"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_17_deep_space_glass.webp",
+      "bytes": 18600,
+      "sha256": "4ab45449de46ff6c58ca3210f30ed436683db761e9f0d328f958d45d996ebf6e"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_18_polar_light_glass.webp",
+      "bytes": 19906,
+      "sha256": "672cae48ef7075d655747302247dc0face6278c682448858ba38192bcecd6677"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_19_neon_cyber.webp",
+      "bytes": 22142,
+      "sha256": "b65cfecd59872269ec3feb6b4f25f387a74f141ff130de9745a0c608669253d5"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_20_warm_moon_glass.webp",
+      "bytes": 19958,
+      "sha256": "a3e66be12c7d140370549409b084facb3c46d96b1d6b7c8e2aab3326087040a0"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_21_crystal_sky.webp",
+      "bytes": 17946,
+      "sha256": "cc0580ecb8d27dde195fbf2fc7fee827c4d9ea00230399cf53bad3349b8e5fcb"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_22_dream_purple.webp",
+      "bytes": 19068,
+      "sha256": "11c4ec00cce9c1f01b154996c6dfffa43c2ebcf38552d018822adf78b6d918b8"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_23_sky_mint.webp",
+      "bytes": 17956,
+      "sha256": "b30edb9a42e83cf9becaff4c179df60504b054add97f9d459d58c885f306ac0a"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_24_forest_mist.webp",
+      "bytes": 17096,
+      "sha256": "3266da2ed617653667b74cc4d1fc08227e7e76a4aa05076d2274331045dbfa15"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_25_daylight_minimal.webp",
+      "bytes": 17130,
+      "sha256": "5b403b3fb417ca5813e2bba58bc860609424d2e89f4d7689cac7db05ff493337"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_26_deep_sea.webp",
+      "bytes": 17818,
+      "sha256": "20b1e0a1146b328d613c2b7898e44d599d66bf97d4b147b9be5107d589584c0c"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_27_violet_smoke.webp",
+      "bytes": 18180,
+      "sha256": "0deae862e71a70de6fe308212dbf5fe4636bac0e215cc0202b7f0fce29a014b5"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_28_rose_veil.webp",
+      "bytes": 17172,
+      "sha256": "abca1e7676feefc889f0e560932ecffde6c1395d5060c5fa7c63a0d6917ca096"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_29_emerald_aurora.webp",
+      "bytes": 18682,
+      "sha256": "907101519d430a0eae5a5143f86ea47b5a1533e6ba7201b22b007cc1e107e666"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_30_blue_silk.webp",
+      "bytes": 18456,
+      "sha256": "c5a54c4ec4be4ad0a85cf7cdbc5a7747f6fa4a0c70519a46a5346a257ed246a9"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_31_peach_dawn.webp",
+      "bytes": 17382,
+      "sha256": "30da040f592bf4c28e127e00c67886486f72ceb32aec8e935416facede09c297"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_32_graphite_smoke.webp",
+      "bytes": 16428,
+      "sha256": "c86eac9f6a26e4f94bd68e94b9c7a6d402ba3c8e9a08c10c22e3a9d49875c563"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_33_pastel_prism.webp",
+      "bytes": 17666,
+      "sha256": "a092a0e7ad895e32900b7876146257f6e595b1fca078794ee1aff4a4beceb1a3"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_34_midnight_moon.webp",
+      "bytes": 16528,
+      "sha256": "1c02e74e005f762be443541f7ffed7be7ab4143c803b4b1e897474bd9d6164bc"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_35_cyan_crystal.webp",
+      "bytes": 19508,
+      "sha256": "20d850340096bad2b743c2c525d95bca709d8c2021692e78f3553dee2f9706b0"
+    },
+    {
+      "path": "app/src/mobile/res/drawable-nodpi/wallpaper_design_36_lavender_crystal.webp",
+      "bytes": 16622,
+      "sha256": "a5d5077c9cbac62c123fe57e6617dc5c039b4cf2bf67d914be01bb3b3abc8418"
+    },
+    {
+      "path": "docs/images/home.jpg",
+      "bytes": 114168,
+      "sha256": "d71586926002576142fef5953f4f874f578b98b16e1057c9c7841f5f3c2f6633"
+    },
+    {
+      "path": "other/image/logo-1.png",
+      "bytes": 35287,
+      "sha256": "ebd984fc041e552c137b2f26821f3f0052bfa5ef77ab288fbcac9a02a7558e7d"
+    }
+  ]
+}

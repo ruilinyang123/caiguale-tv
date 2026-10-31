@@ -1,0 +1,37 @@
+菜瓜乐影视 (Caiguale TV)
+Copyright (C) 2026 杨瑞霖
+
+本作品为 GPL-3.0 衍生作品，基于以下上游修改而来：
+
+1. FongMi/TV
+   https://github.com/FongMi/TV
+   许可证：GNU General Public License v3.0
+   固定提交：026c8c85d6ecbe3711aa56610c203a5e7e45f7de
+
+2. motao123/webtv (WebHomeTV)
+   https://github.com/motao123/webtv
+   许可证：GNU General Public License v3.0
+   固定提交：2b1bd7a8cfb67463f0088d1fbe81098da7da195b
+
+本作品整体按 GNU General Public License v3.0 授权，完整许可证见同目录 LICENSE.md。
+完整对应源码：见本仓库（或随 APK 分发的源码包）。任何分发本 APK 的行为，
+必须同时提供对应完整源码，且不得移除本 NOTICE 与 LICENSE.md。
+
+本项目相对上游的修改摘要：
+- applicationId 改为 com.caiguale.tv；应用名改为「菜瓜乐影视」；自有图标与配色。
+- 新增 app/src/main/assets/caiguale/：本地 WebHome 首页（首页/详情/搜索 UI）。
+- 新增 CaigualeBootstrap：首次启动释放首页资源并注册为默认首页站点。
+- 新增 CaigualeVodBridge 并在 HomeWebBridge 中挂载 vod.sites/home/category/detail/search/play，
+  经原生 SiteApi 提供真实片单数据。
+- VideoActivity 增加可选 flag 参数（指定线路起播）。
+- 禁用上游自动更新通道（Updater.ENABLE_UPSTREAM_UPDATE=false）。
+
+第三方资源保留原许可证：
+- app/src/main/assets/js/sha256.LICENSE.txt
+- app/src/main/assets/js/spider-editor.LICENSE.txt
+- 基础版（dev/exo-only-base）改用官方 AndroidX Media3 1.11.1（Google Maven），
+  不含定制 media3/nextlib、IJK/MPV 内核与专有协议 SDK，详见 docs/EXO_ONLY_BASE.md。
+- Full 版仍使用上游定制 media3 1.11.0-alpha01-fongmi，来源见 third_party/media-lock.json。
+
+注意：本仓库不含 power721/alist-tvbox 的任何代码。该项目未声明开源许可证
+（保留一切权利），本项目仅可能以独立进程方式通过其 HTTP 接口对接，不复用其代码。

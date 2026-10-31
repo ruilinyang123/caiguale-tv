@@ -1,0 +1,257 @@
+package com.fongmi.android.tv.utils;
+
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.StatFs;
+import android.provider.OpenableColumns;
+import android.text.TextUtils;
+
+import androidx.core.content.FileProvider;
+
+import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.R;
+import com.fongmi.android.tv.impl.Callback;
+import com.github.catvod.crawler.SpiderDebug;
+import com.github.catvod.utils.Path;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.text.DecimalFormat;
+import java.util.Enumeration;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+public class FileUtil {
+
+    public static String getDisplayName(Uri uri) {
+        return getDisplayName(uri, uri.toString());
+    }
+
+    public static String getDisplayName(Uri uri, String fallback) {
+        String name = "content".equalsIgnoreCase(uri.getScheme()) ? queryDisplayName(uri) : null;
+        if (!TextUtils.isEmpty(name)) return name;
+        name = uri.getLastPathSegment();
+        return TextUtils.isEmpty(name) ? fallback : name;
+    }
+
+    private static String queryDisplayName(Uri uri) {
+        String[] projection = {OpenableColumns.DISPLAY_NAME};
+        try (Cursor cursor = App.get().getContentResolver().query(uri, projection, null, null, null)) {
+            return cursor == null || !cursor.moveToFirst() ? null : cursor.getString(0);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static File getWall(int index) {
+        return Path.files("wallpaper_" + index);
+    }
+
+    public static File getWallCache() {
+        return Path.files("wallpaper_cache");
+    }
+
+    public static void openFile(File file) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setDataAndType(getShareUri(file), FileUtil.getMimeType(file.getName()));
+        App.get().startActivity(intent);
+    }
+
+    public static void gzipCompress(File target) {
+        byte[] buffer = new byte[16384];
+        try (FileInputStream is = new FileInputStream(target); GZIPOutputStream os = new GZIPOutputStream(new FileOutputStream(target.getAbsolutePath() + ".gz"))) {
+            int read;
+            while ((read = is.read(buffer)) > 0) os.write(buffer, 0, read);
+        } catch (IOException e) {
+            SpiderDebug.log(e);
+        } finally {
+            Path.clear(target);
+        }
+    }
+
+    public static boolean gzipCompress(byte[] data, File target) {
+        File temp = null;
+        try {
+            temp = createTempFile(target);
+            try (FileOutputStream fileOutput = new FileOutputStream(temp); GZIPOutputStream output = new GZIPOutputStream(fileOutput)) {
+                output.write(data);
+                output.finish();
+                fileOutput.getFD().sync();
+            }
+            Path.move(temp, target);
+            return true;
+        } catch (IOException e) {
+            SpiderDebug.log(e);
+            if (temp != null) Path.clear(temp);
+            return false;
+        }
+    }
+
+    public static String readGzip(File file) {
+        try (GZIPInputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+            return Path.read(is);
+        } catch (IOException e) {
+            SpiderDebug.log(e);
+            return "";
+        }
+    }
+
+    private static File createTempFile(File target) throws IOException {
+        File parent = target.getAbsoluteFile().getParentFile();
+        if (parent == null) throw new IOException("Target has no parent directory");
+        if (!parent.isDirectory() && !parent.mkdirs() && !parent.isDirectory()) throw new IOException("Unable to create target directory");
+        return File.createTempFile("copy-", ".tmp", parent);
+    }
+
+    private static final long GZIP_MAX_BYTES = 50L * 1024 * 1024;
+
+    public static void gzipDecompress(File target, File path) {
+        byte[] buffer = new byte[16384];
+        long total = 0;
+        try (GZIPInputStream is = new GZIPInputStream(new BufferedInputStream(new FileInputStream(target))); BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(path))) {
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                total += read;
+                if (total > GZIP_MAX_BYTES) throw new IOException("GZIP decompressed size exceeds limit " + GZIP_MAX_BYTES);
+                os.write(buffer, 0, read);
+            }
+        } catch (Exception e) {
+            Path.clear(path);
+            SpiderDebug.log(e);
+        }
+    }
+
+    public static void zipDecompress(File target, File path) {
+        zipDecompress(target, path, Integer.MAX_VALUE, Long.MAX_VALUE);
+    }
+
+    public static boolean zipDecompress(File target, File path, int maxEntries, long maxBytes) {
+        try (ZipFile zip = new ZipFile(target)) {
+            Enumeration<?> entries = zip.entries();
+            String root = path.getCanonicalPath() + File.separator;
+            byte[] buffer = new byte[16384];
+            long totalBytes = 0;
+            int totalEntries = 0;
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+                if (++totalEntries > maxEntries) throw new IOException("Archive entry limit exceeded");
+                File out = new File(path, entry.getName());
+                if (!out.getCanonicalPath().startsWith(root)) continue;
+                if (entry.isDirectory()) out.mkdirs();
+                else try (BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry)); BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(Path.create(out)))) {
+                    int read;
+                    while ((read = is.read(buffer)) != -1) {
+                        totalBytes += read;
+                        if (totalBytes > maxBytes) throw new IOException("Archive size limit exceeded");
+                        os.write(buffer, 0, read);
+                    }
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            SpiderDebug.log(e);
+            return false;
+        }
+    }
+
+    public static void clearCache(Callback callback) {
+        Task.execute(() -> {
+            Path.clear(Path.cache());
+            App.post(callback::success);
+        });
+    }
+
+    public static void getCacheSize(Callback callback) {
+        Task.execute(() -> {
+            String usage = byteCountToDisplaySize(getDirectorySize(Path.cache()));
+            App.post(() -> callback.success(usage));
+        });
+    }
+
+    public static long getDirectorySize(File dir) {
+        long size = 0;
+        if (dir == null) return 0;
+        if (dir.isDirectory()) for (File file : Path.list(dir)) size += getDirectorySize(file);
+        else size = dir.length();
+        return size;
+    }
+
+    public static long getAvailableStorageSpace(File file) {
+        try {
+            StatFs stat = new StatFs(file.getAbsolutePath());
+            return stat.getAvailableBlocksLong() * stat.getBlockSizeLong();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    // Ported from webhtv: storage facts used by player cache capacity policies.
+    public static StorageSpace getStorageSpace(File file) {
+        try {
+            File target = existingPath(file);
+            if (target == null) return StorageSpace.unavailable();
+            StatFs stat = new StatFs(target.getAbsolutePath());
+            return StorageSpace.of(stat.getAvailableBytes(), stat.getTotalBytes());
+        } catch (Exception e) {
+            return StorageSpace.unavailable();
+        }
+    }
+
+    private static File existingPath(File file) {
+        File target = file;
+        while (target != null && !target.exists()) target = target.getParentFile();
+        return target;
+    }
+
+    public record StorageSpace(boolean available, long availableBytes, long totalBytes) {
+
+        public static StorageSpace of(long availableBytes, long totalBytes) {
+            boolean valid = availableBytes >= 0 && totalBytes > 0 && availableBytes <= totalBytes;
+            return valid ? new StorageSpace(true, availableBytes, totalBytes) : unavailable();
+        }
+
+        public static StorageSpace unavailable() {
+            return new StorageSpace(false, 0, 0);
+        }
+    }
+
+    public static Uri getShareUri(String path) {
+        return getShareUri(new File(path.replace("file://", "")));
+    }
+
+    public static Uri getShareUri(File file) {
+        return FileProvider.getUriForFile(App.get(), App.get().getPackageName() + ".provider", file);
+    }
+
+    private static String getMimeType(String fileName) {
+        String mimeType = URLConnection.guessContentTypeFromName(fileName);
+        return TextUtils.isEmpty(mimeType) ? "*/*" : mimeType;
+    }
+
+    public static String readText(File file) {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] data = new byte[(int) file.length()];
+            int read = fis.read(data);
+            return new String(data, 0, read, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public static String byteCountToDisplaySize(long size) {
+        if (size <= 0) return ResUtil.getString(R.string.none);
+        String[] units = new String[]{"bytes", "KB", "MB", "GB", "TB"};
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+}

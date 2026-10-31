@@ -1,0 +1,107 @@
+name: Caiguale TV - EXO-only Base (ARM64 Lite, manual)
+
+# 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
+# 触发方式仅 workflow_dispatch：分支 push 不会自动跑 Full 的 caiguale-debug.yml
+# （该工作流自身也只有 workflow_dispatch），CI 费用和误构建风险由人工控制。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: caiguale-base-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  base-policy:
+    name: Source policy (no Gradle)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reject excluded SDKs / binaries in source tree
+        run: python3 ci/check_exo_base_source.py
+      - name: Verifier unit tests (synthetic APKs, no Gradle)
+        run: python3 ci/test_base_policy.py
+
+  build-base:
+    name: Build leanbackLiteArm64_v8aDebug
+    needs: base-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source exists
+        shell: bash
+        run: |
+          test -f gradlew || { echo "Android source missing"; exit 1; }
+          test -f settings.gradle
+          test -f app/build.gradle
+          test -f gradle/wrapper/gradle-wrapper.jar
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android SDK
+        run: |
+          sdkmanager --install 'platforms;android-37' 'build-tools;37.0.0' 'build-tools;36.0.0'
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          java -version
+          node --check app/src/main/assets/caiguale/app.js
+          test ! -e app/src/main/jniLibs
+          test ! -e app/src/mpvlibs-arm64
+          test ! -e app/libs
+      - name: Build EXO-only base APK
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --no-parallel --max-workers=2 \
+            --no-build-cache --stacktrace --console=plain \
+            '-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' \
+            :app:assembleLeanbackLiteArm64_v8aDebug \
+            2>&1 | tee caiguale-base-gradle.log
+      - name: Verify base APK contract
+        if: success()
+        run: |
+          set -euo pipefail
+          python3 ci/verify_caiguale_base_apk.py .
+          APK=$(find app/build/outputs/apk -name '*.apk' | head -1)
+          aapt2 dump badging "$APK" | head -5
+          aapt2 dump badging "$APK" | grep -q "package: name='com.caiguale.tv'"
+          ! aapt2 dump badging "$APK" | grep -q 'armeabi-v7a'
+      - name: Upload base APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: caiguale-tv-exo-base-arm64-debug
+          path: |
+            app/build/outputs/apk/**/*.apk
+            ci-base-sha256.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload base build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: caiguale-base-build-log
+          path: |
+            caiguale-base-gradle.log
+            **/build/reports/**
+          if-no-files-found: warn
+          retention-days: 14
