@@ -618,7 +618,7 @@
           { group: "阿里云", type: "aliyun", url: "https://www.aliyundrive.com/s/hz1HHxhahsE", title: "aliyundrive 公开分享" },
           { group: "阿里云", type: "aliyun", url: "https://www.alipan.com/s/QbaHJ71QjV1", title: "alipan 公开分享" },
           { group: "阿里云", type: "aliyun", url: "https://www.alipan.com/s/GMrv1QCZhNB", title: "alipan 带提取码" },
-          { group: "115", type: "115", url: "https://115cdn.com/s/swh88n13z72?password=r9b2#", password: "", title: "115 带访问码" },
+          { group: "115", type: "115", url: "https://115cdn.com/s/swh88n13z72?password=#", password: "", title: "115 带访问码" },
           { group: "115", type: "115", url: "https://115.com/s/sw313r03zx1", title: "115 失效/违规样本" },
           { group: "夸克", type: "quark", url: "https://pan.quark.cn/s/9803af406f13", title: "夸克公开分享" },
           { group: "夸克", type: "quark", url: "https://pan.quark.cn/s/f161a5364657", title: "夸克提取码样本" },
@@ -629,8 +629,8 @@
           { group: "天翼", type: "tianyi", url: "https://cloud.189.cn/t/viy2quQzMBne", title: "天翼公开分享" },
           { group: "天翼", type: "tianyi", url: "https://cloud.189.cn/web/share?code=UfUjiiFRbymq", title: "天翼带密码长链接" },
           { group: "天翼", type: "tianyi", url: "https://cloud.189.cn/t/notexist", title: "天翼不存在样本" },
-          { group: "百度", type: "baidu", url: "https://pan.baidu.com/s/1rIcc6X7D3rVzNSqivsRejw?pwd=0w0j", password: "", title: "百度带提取码分享" },
-          { group: "百度", type: "baidu", url: "https://pan.baidu.com/s/1TMhfQ5yNnlPPSGbw4RQ-LA?pwd=6j77", password: "", title: "百度提取码样本" },
+          { group: "百度", type: "baidu", url: "https://pan.baidu.com/s/1rIcc6X7D3rVzNSqivsRejw?pwd=", password: "", title: "百度带提取码分享" },
+          { group: "百度", type: "baidu", url: "https://pan.baidu.com/s/1TMhfQ5yNnlPPSGbw4RQ-LA?pwd=", password: "", title: "百度提取码样本" },
           { group: "百度", type: "baidu", url: "https://pan.baidu.com/s/1notexist", title: "百度不存在样本" }
         ]
       };
@@ -888,7 +888,7 @@
             + '<input type="checkbox" data-pan-select="' + index + '"' + (item.selected ? " checked" : "") + '>'
             + '<div class="result-main">'
             + '<div class="result-title">' + escapeHtml(item.title || item.note || item.url) + '</div>'
-            + '<div class="result-url">' + escapeHtml(item.group + " | " + item.type + " | " + item.url + (item.password ? " | pwd: """)) + '</div>'
+            + '<div class="result-url">' + escapeHtml(item.group + " | " + item.type + " | " + item.url + (item.password ? " | pwd: " + item.password : "")) + '</div>'
             + '<span class="badge ' + escapeHtml(item.state) + '">' + escapeHtml(item.state) + '</span> '
             + '<span class="note">' + escapeHtml((item.cache_hit ? "cache hit · " : "") + (item.elapsed ? item.elapsed + "ms · " : "") + (item.error || item.summary || "")) + '</span>'
             + '<div class="actions">'

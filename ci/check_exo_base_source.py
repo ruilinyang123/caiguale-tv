@@ -17,7 +17,7 @@ def check(root):
             text=p.read_text()
             if any(b in text for b in BAD_IMPORTS):errors.append(f'excluded SDK reference: {rel}')
         if rel.startswith('webhome-devkit/') and p.suffix in ('.html','.js','.json'):
-            if re.search(r'''(?i)["']?(?:apiKey|password|sharePassword|sharePwd|pwd)["']?\s*:\s*["'][^"'\r\n]+["']''',p.read_text()):
+            if re.search(r'''(?i)(?:^|[{,])\s*["']?(?:apiKey|password|sharePassword|sharePwd|pwd)["']?\s*:\s*["'][^"'\r\n]+["']''',p.read_text(),re.M):
                 errors.append(f'nonempty demo credential: {rel}')
     g=(root/'app/build.gradle').read_text()
     if 'implementation fileTree' in g:errors.append('unbounded app/libs dependency')
