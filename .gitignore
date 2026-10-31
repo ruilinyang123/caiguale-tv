@@ -1,0 +1,39 @@
+# Android / Gradle build output
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+*.apks
+*.log
+out/
+dist/
+node_modules/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.mobileprovision
+**/*credentials*.json
+**/*token*.json
+**/*secret*.json
+**/auth/
+**/cookies/
+id_rsa*
+id_ed25519*
+
+# Machine-local work files
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+/debug/
+docs-private/
