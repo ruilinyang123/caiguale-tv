@@ -3,7 +3,7 @@
 
 Checks the artifact against the base build contract:
 - package id com.caiguale.tv
-- exactly one ABI (arm64-v8a)
+- exactly one ABI matching CAIGUALE_TARGET_ABI (arm64-v8a or armeabi-v7a)
 - none of the excluded proprietary/native SDKs
 - official Media3 ExoPlayer present, fork-only Media3 extensions absent
 """
@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -19,7 +20,9 @@ from pathlib import Path
 
 APK_GLOB = "app/build/outputs/apk/**/*.apk"
 EXPECTED_APP_ID = "com.caiguale.tv"
-EXPECTED_ABI = "arm64-v8a"
+EXPECTED_ABI = os.environ.get("CAIGUALE_TARGET_ABI", "arm64-v8a")
+if EXPECTED_ABI not in ("arm64-v8a", "armeabi-v7a"):
+    raise SystemExit("Unsupported CAIGUALE_TARGET_ABI: " + EXPECTED_ABI)
 
 FORBIDDEN_ENTRY_PATTERNS = [
     r"^lib/[^/]+/libijk.*\.so$",
@@ -71,7 +74,7 @@ def check(apk: Path) -> tuple[list[str], dict]:
         details["entry_count"] = len(names)
         abis = sorted({n.split("/")[1] for n in names if n.startswith("lib/") and n.count("/") >= 2})
         details["abis"] = abis
-        if abis and abis != [EXPECTED_ABI]:
+        if abis != [EXPECTED_ABI]:
             errors.append(f"ABI set {abis} != ['{EXPECTED_ABI}']")
         for pattern in FORBIDDEN_ENTRY_PATTERNS:
             for name in names:
@@ -98,8 +101,8 @@ def check(apk: Path) -> tuple[list[str], dict]:
             details["badging_native_code"] = native.group(1).strip() if native else ""
             if native:
                 declared = native.group(1).strip()
-                if EXPECTED_ABI not in declared or "armeabi" in declared:
-                    errors.append(f"badging native-code '{declared}' not arm64-only")
+                if re.findall(r"'([^']+)'", declared) != [EXPECTED_ABI]:
+                    errors.append(f"badging native-code '{declared}' does not match {EXPECTED_ABI}")
     return errors, details
 
 
