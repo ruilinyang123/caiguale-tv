@@ -38,8 +38,8 @@ android {
         applicationId "com.caiguale.tv"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
-        versionCode 720
-        versionName "5.17.2"
+        versionCode 721
+        versionName "5.17.3"
         buildConfigField "boolean", "FEATURE_EXO_ONLY", "true"
         buildConfigField "boolean", "FEATURE_IJK", "false"
         buildConfigField "String", "MEDIA3_VERSION", "\"${libs.versions.media3.get()}\""
