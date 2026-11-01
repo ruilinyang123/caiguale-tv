@@ -849,13 +849,10 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         if (result.hasPosition()) mHistory.setPosition(result.getPosition());
         mBinding.control.parse.setVisibility(isUseParse() ? View.VISIBLE : View.GONE);
         startPlayer(getHistoryKey(), result, isUseParse(), getSite().getTimeout(), buildMetadata());
-        String danmakuContext = getDanmakuContext();
-        if (DanmakuApi.canSearch()) DanmakuApi.search(mHistory.getVodName(), getEpisode().getName(), danmakuContext, this::getDanmakuContext, danmaku -> {
-            if (DanmakuSetting.isSpiderFirst() && !result.getDanmaku().isEmpty()) player().addDanmaku(danmaku);
-            else player().setDanmaku(danmaku);
-            mBinding.control.action.danmaku.setSelected(DanmakuSetting.isEnabled());
-        });
-        else DanmakuApi.cancel();
+        // EXO-only uses upstream Media3, which has no custom danmaku renderer.
+        // Disable the entry rather than presenting an action that cannot work.
+        DanmakuApi.cancel();
+        mBinding.control.action.danmaku.setVisibility(View.GONE);
         preloadNextEpisode();
     }
 
@@ -1735,7 +1732,7 @@ public class VideoActivity extends PlaybackActivity implements CustomKeyDownVod.
         else if (event.getType() == RefreshEvent.Type.PLAYER) onRefresh();
         else if (event.getType() == RefreshEvent.Type.VOD) updateVod(event.getVod());
         else if (event.getType() == RefreshEvent.Type.SUBTITLE) player().setSub(Sub.from(event.getPath()));
-        else if (event.getType() == RefreshEvent.Type.DANMAKU) player().setDanmaku(Danmaku.from(event.getPath()));
+        // DANMAKU refresh events are intentionally ignored by the EXO-only build.
     }
 
     private void setPosition() {
