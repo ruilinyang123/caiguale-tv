@@ -22,7 +22,7 @@ def check(root):
     g=(root/'app/build.gradle').read_text()
     if 'implementation fileTree' in g:errors.append('unbounded app/libs dependency')
     if 'implementation libs.nextlib' in g:errors.append('nextlib dependency')
-    if 'leanbackLiteArm64_v8aDebug' not in g:errors.append('variant not restricted to base target')
+    if not all(variant in g for variant in ('leanbackLiteArm64_v8aDebug', 'leanbackLiteArmeabi_v7aDebug')):errors.append('base target variants not restricted to ARM64 and ARMv7')
     if 'applicationId "com.caiguale.tv"' not in g:errors.append('wrong applicationId')
     catalog=(root/'gradle/libs.versions.toml').read_text()
     if '-fongmi' in catalog or 'media3-ui-danmaku' in catalog:errors.append('custom media dependency')
