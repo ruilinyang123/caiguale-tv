@@ -1,4 +1,5 @@
 # EXO-only MiTV-MFTR0 ARMv7 (32-bit) build verification
+# MiTV-MFTR0 32-bit WebHome bootstrap fix build: 5.17.3 / versionCode 721
 name: Caiguale TV - EXO-only Base (ARMv7 Lite, manual)
 
 # 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
