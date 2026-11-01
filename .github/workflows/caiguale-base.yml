@@ -1,9 +1,14 @@
 name: Caiguale TV - EXO-only Base (ARM64 Lite, manual)
 
 # 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
-# 触发方式仅 workflow_dispatch：分支 push 不会自动跑 Full 的 caiguale-debug.yml
-# （该工作流自身也只有 workflow_dispatch），CI 费用和误构建风险由人工控制。
+# 首次 EXO-only 云端构建：仅对本工作流文件的分支变更触发一次 push 构建。
+# 后续普通代码提交不会自动触发本流程；需要时仍可以手动 workflow_dispatch。
 on:
+  push:
+    branches:
+      - dev/exo-only-base
+    paths:
+      - '.github/workflows/caiguale-base.yml'
   workflow_dispatch:
 
 permissions:
