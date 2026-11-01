@@ -1,0 +1,85 @@
+name: Publish Caiguale ARMv7 WebHome Fix Test APK
+
+# One-shot, pinned build: release an already verified APK, no Gradle build.
+on:
+  push:
+    branches:
+      - dev/exo-only-base
+    paths:
+      - '.github/workflows/publish-armv7-webhome-fix.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: caiguale-publish-armv7-webhome-20261101
+  cancel-in-progress: false
+
+jobs:
+  release-verified-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: v5.17.2-exo-armv7-webhome-fix-20261101
+      SOURCE_RUN: '41285971753'
+      SOURCE_SHA: 75e5c20819471a7f1a2800890756085791a969b7
+      APK_SHA256: cc72c005cbd0b6d1154ac6c565a3c5b1afa6cc9e97d4bed4cec4c855693f1daf
+      APK_NAME: caiguale-tv-exo-armv7-webhome-fix.apk
+    steps:
+      - name: Verify tagged release is not already published
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists, will leave it unchanged"
+            exit 1
+          fi
+      - name: Download exact passing Actions artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifact
+          gh run download "$SOURCE_RUN" --repo "$GH_REPO" \
+            --name caiguale-tv-exo-base-armeabi-v7a-debug \
+            --dir artifact
+          find artifact -type f -maxdepth 3 -print
+      - name: Verify provenance, SHA-256, and package file
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN" \
+            --jq '.head_sha' | grep -Fx "$SOURCE_SHA"
+          mapfile -t APKS < <(find artifact -type f -name '*.apk')
+          if [ "${#APKS[@]}" -ne 1 ]; then
+            echo "Expected exactly one APK; got ${#APKS[@]}"
+            exit 1
+          fi
+          echo "$APK_SHA256  ${APKS[0]}" | sha256sum -c -
+          cp "${APKS[0]}" "$APK_NAME"
+          echo "$APK_SHA256  $APK_NAME" > SHA256SUMS.txt
+          test "$(stat -c%s "$APK_NAME")" -gt 1000000
+      - name: Publish public pre-release for NAS Agent download
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<EOF
+          菜瓜乐影视 EXO-only / armeabi-v7a (32-bit) TV test build.
+
+          Fixes: immutable CustomCsp registry on first launch; home version marker only after successful registration; local webHome without a remote configuration source.
+
+          Device target: MiTV-MFTR0 / Android 14 / armeabi-v7a.
+          Source commit: $SOURCE_SHA
+          Source build run: https://github.com/$GH_REPO/actions/runs/$SOURCE_RUN
+          APK SHA-256: $APK_SHA256
+
+          WARNING: Test-only debug build. GitHub-hosted runner debug signing key can differ from the previous APK. Back up any important app settings before uninstalling. An in-place update may fail due to signing mismatch. Successful cloud build does not prove WebView UI works on a television. No IJK/MPV or proprietary protocol SDKs are included.
+          EOF
+          gh release create "$TAG" "$APK_NAME" SHA256SUMS.txt \
+            --repo "$GH_REPO" \
+            --target "$SOURCE_SHA" \
+            --title "菜瓜乐影视 32位 WebHome 首页修复测试版" \
+            --notes-file release-notes.md \
+            --prerelease
+          gh release view "$TAG" --repo "$GH_REPO" --json url,assets
