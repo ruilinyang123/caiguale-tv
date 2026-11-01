@@ -117,6 +117,20 @@ public class VodConfig extends BaseConfig {
 
     @Override
     protected void load(Config config) throws Throwable {
+        // A new installation can have no remote source configuration yet.
+        // Still inject the bundled Caiguale webHome so the first screen is the
+        // local WebView rather than falling back to the native FongMi grid.
+        if (TextUtils.isEmpty(config.getUrl())) {
+            CustomCspSetting.Registry registry = CustomCspSetting.load();
+            if (registry.isEnabled() && !registry.sites().isEmpty()) {
+                setSites(new ArrayList<>());
+                CustomCspSetting.Result injected = CustomCspSetting.inject(getSites());
+                Site firstHome = injected.home().isEmpty() ? getSites().get(0) : injected.home();
+                setHome(config, firstHome, false);
+                android.util.Log.i(TAG, "Loaded local webHome without a remote source configuration");
+                return;
+            }
+        }
         String json = Decoder.getJson(UrlUtil.convert(config.getUrl()), TAG);
         checkJson(config, Json.parse(json).getAsJsonObject());
     }
