@@ -11,6 +11,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from unittest.mock import patch
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +51,31 @@ class VerifyApkTest(unittest.TestCase):
             self.assertEqual(details["abis"], ["arm64-v8a"])
             # aapt2 may be absent on this host; that single check is environment-specific.
             self.assertTrue(all("aapt" in e for e in errors), errors)
+
+    def test_accepts_32bit_arm_exo_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            self.make_apk(tmp, {"classes.dex": GOOD_DEX, "lib/armeabi-v7a/libquickjs.so": b"\\x7fELF"}, name="app-armeabi-v7a-debug.apk")
+            with patch.object(verifier, "EXPECTED_ABI", "armeabi-v7a"):
+                errors, details = verifier.check(verifier.find_apks(tmp)[0])
+            self.assertEqual(details["abis"], ["armeabi-v7a"])
+            self.assertTrue(all("aapt" in e for e in errors), errors)
+
+    def test_32bit_target_rejects_arm64_library(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            self.make_apk(tmp, {"classes.dex": GOOD_DEX, "lib/arm64-v8a/libquickjs.so": b"\\x7fELF"})
+            with patch.object(verifier, "EXPECTED_ABI", "armeabi-v7a"):
+                errors, _ = verifier.check(verifier.find_apks(tmp)[0])
+            self.assertTrue(any("ABI set" in e for e in errors), errors)
+
+    def test_rejects_missing_native_abi(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            self.make_apk(tmp, {"classes.dex": GOOD_DEX})
+            with patch.object(verifier, "EXPECTED_ABI", "armeabi-v7a"):
+                errors, _ = verifier.check(verifier.find_apks(tmp)[0])
+            self.assertTrue(any("ABI set" in e for e in errors), errors)
 
     def test_rejects_mpv_and_ijk_native(self):
         with tempfile.TemporaryDirectory() as d:
