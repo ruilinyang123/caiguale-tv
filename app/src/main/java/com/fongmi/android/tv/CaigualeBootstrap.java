@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 菜瓜乐影视首启引导：
@@ -23,7 +25,7 @@ public final class CaigualeBootstrap {
     private static final String ASSET_DIR = "caiguale";
     private static final String ITEM_ID = "caiguale";
     private static final String VERSION_KEY = "caiguale_home_version";
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     private CaigualeBootstrap() {
     }
@@ -34,9 +36,11 @@ public final class CaigualeBootstrap {
             boolean fresh = Prefers.getInt(VERSION_KEY, 0) < VERSION || !new File(dir, "index.html").exists();
             if (fresh) {
                 copyAssets(context.getAssets(), ASSET_DIR, dir);
-                Prefers.put(VERSION_KEY, String.valueOf(VERSION));
             }
             register();
+            // Commit the version only after registration succeeds. Store an int for getInt().
+            if (fresh) Prefers.put(VERSION_KEY, VERSION);
+            android.util.Log.i("CaigualeBootstrap", "webHome registered: " + CustomCspSetting.localUrl(ITEM_ID, "index.html"));
         } catch (Throwable e) {
             // 引导失败不能挡住 App 启动：退回原生首页。
             android.util.Log.w("CaigualeBootstrap", "bootstrap failed", e);
@@ -45,9 +49,12 @@ public final class CaigualeBootstrap {
 
     private static void register() {
         CustomCspSetting.Registry registry = CustomCspSetting.load();
+        // Registry.getItems() returns Collections.emptyList() when items is null.
+        // Always work on a mutable copy, including on a clean install.
+        List<CustomCspSetting.Item> items = new ArrayList<>(registry.getItems());
         String homePage = CustomCspSetting.localUrl(ITEM_ID, "index.html");
         CustomCspSetting.Item item = null;
-        for (CustomCspSetting.Item exist : registry.getItems()) {
+        for (CustomCspSetting.Item exist : items) {
             if (ITEM_ID.equals(exist.getId())) {
                 item = exist;
                 break;
@@ -60,16 +67,27 @@ public final class CaigualeBootstrap {
             item.setWebHome(true);
             item.setType(3);
             item.setApi("csp_Builtin");
-            registry.getItems().add(item);
+            items.add(item);
         }
+        registry.setItems(items);
         item.setEnabled(true);
         item.setKind("webHome");
         item.setWebHome(true);
+        item.setType(3);
+        item.setApi("csp_Builtin");
         item.setName("菜瓜乐影视");
         item.setHomePage(homePage);
         registry.setEnabled(true);
         registry.setHomeKey(item.getKey());
         CustomCspSetting.save(registry.normalize());
+        // Fail explicitly if persistence did not take effect. Do not mark bootstrap complete.
+        CustomCspSetting.Registry saved = CustomCspSetting.load();
+        boolean registered = saved.isEnabled() && saved.getHomeKey().equals(item.getKey())
+                && saved.getItems().stream().anyMatch(registeredItem ->
+                        ITEM_ID.equals(registeredItem.getId()) && registeredItem.isEnabled()
+                                && registeredItem.isWebHome()
+                                && homePage.equals(registeredItem.getHomePage()));
+        if (!registered) throw new IllegalStateException("Caiguale webHome registration not persisted");
     }
 
     private static void copyAssets(AssetManager assets, String path, File target) throws IOException {
