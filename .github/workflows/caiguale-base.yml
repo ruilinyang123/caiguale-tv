@@ -1,5 +1,5 @@
 # EXO-only MiTV-MFTR0 ARMv7 (32-bit) build verification
-# MiTV-MFTR0 32-bit WebHome bootstrap fix build: 5.17.3 / versionCode 721
+# MiTV-MFTR0 32-bit WebHome bridge timing fix build: 5.17.4 / versionCode 722
 name: Caiguale TV - EXO-only Base (ARMv7 Lite, manual)
 
 # 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
@@ -34,6 +34,8 @@ jobs:
         run: python3 ci/check_exo_base_source.py
       - name: Verifier unit tests (synthetic APKs, no Gradle)
         run: python3 ci/test_base_policy.py
+      - name: Caiguale bridge readiness regression (Node, no Gradle)
+        run: node ci/test_caiguale_bridge_startup.js
 
   build-base:
     name: Build leanbackLiteArmeabi_v7aDebug
