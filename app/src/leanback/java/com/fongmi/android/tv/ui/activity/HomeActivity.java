@@ -149,7 +149,12 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private void initAfterFirstFrame() {
         SpiderDebug.log("startup", "home first frame cost=%sms", System.currentTimeMillis() - App.time());
         App.post(this::initConfig, 80);
-        App.post(() -> PermissionUtil.requestFile(this, allGranted -> PermissionUtil.requestNotify(this)), 1800);
+        // EXO-only Caiguale uses app-private WebHome assets. Do not hijack first
+        // launch with Android's All Files Access screen; request permission
+        // only when the user explicitly opens a file-based feature.
+        if (!com.fongmi.android.tv.BuildConfig.FEATURE_EXO_ONLY) {
+            App.post(() -> PermissionUtil.requestFile(this, allGranted -> PermissionUtil.requestNotify(this)), 1800);
+        }
         App.post(() -> LocalNetworkPermission.request(this, granted -> {
             if (granted) DLNARendererService.start(this);
         }), 2500);
