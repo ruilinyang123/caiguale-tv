@@ -1,0 +1,84 @@
+name: Publish Caiguale v722 ARMv7 Bridge Ready APK
+
+# One-shot pre-release of the already verified GitHub Actions build.
+on:
+  push:
+    branches:
+      - dev/exo-only-base
+    paths:
+      - '.github/workflows/publish-armv7-bridge-ready-v722.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: caiguale-release-v722-armv7
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: v5.17.4-exo-armv7-bridge-ready-20261101
+      SOURCE_RUN: '41295062516'
+      SOURCE_SHA: c2261ddc88ed9c2657bb205954dad802903d0f2d
+      APK_SHA256: c2b0c28620b5caa5a6687bede2c61f7e7e74955df4e130444fe43b7ee16036c1
+      APK_NAME: caiguale-tv-v722-armv7-bridge-ready.apk
+    steps:
+      - name: Ensure release not previously created
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite"
+            exit 1
+          fi
+      - name: Fetch exact successful artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifact
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN" --jq '.head_sha' | grep -Fx "$SOURCE_SHA"
+          gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN" --jq '.conclusion' | grep -Fx success
+          gh run download "$SOURCE_RUN" --repo "$GH_REPO" \
+            --name caiguale-tv-exo-base-armeabi-v7a-debug \
+            --dir artifact
+      - name: Validate provenance and APK checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t apks < <(find artifact -type f -name '*.apk')
+          [ "${#apks[@]}" -eq 1 ] || { echo "Expected exactly one APK"; exit 1; }
+          echo "$APK_SHA256  ${apks[0]}" | sha256sum -c -
+          cp "${apks[0]}" "$APK_NAME"
+          echo "$APK_SHA256  $APK_NAME" > SHA256SUMS.txt
+          test "$(stat -c%s "$APK_NAME")" -gt 1000000
+      - name: Create GitHub public pre-release
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > notes.md <<EOF
+          菜瓜乐影视 v5.17.4 (versionCode 722), EXO-only Android TV test APK for 32-bit armeabi-v7a devices such as MiTV-MFTR0.
+
+          Changes:
+          - Frontend waits until the native SDK and per-load bridge token are ready before asking for vod data.
+          - Native side signals fmbridge-ready after installing the token (the security check is not bypassed).
+          - EXO-only startup no longer automatically asks for All Files Access.
+          - Default locale follows the TV system locale when no preference is saved.
+          - Version bumped from 721 to 722.
+
+          Source commit: $SOURCE_SHA
+          CI run: https://github.com/$GH_REPO/actions/runs/$SOURCE_RUN
+          APK SHA-256: $APK_SHA256
+
+          This is a debug-only build. Tested in CI for compilation, ABI, native libraries and security policy; WebView display and playback still require real TV verification. The debug signing key may differ between CI runs. If in-place installation fails due to a signature mismatch, back up any important settings before uninstalling the previous version.
+          EOF
+          gh release create "$TAG" "$APK_NAME" SHA256SUMS.txt \
+            --repo "$GH_REPO" \
+            --target "$SOURCE_SHA" \
+            --title "菜瓜乐影视 v722 ARMv7 · 桥接时序修复测试版" \
+            --notes-file notes.md \
+            --prerelease
+          gh release view "$TAG" --repo "$GH_REPO" --json url,assets
