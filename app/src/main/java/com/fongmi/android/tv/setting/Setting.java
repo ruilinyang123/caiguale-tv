@@ -379,7 +379,15 @@ public class Setting {
     }
 
     public static String getLanguage() {
-        return DisplaySettings.normalizeLanguage(Prefers.getString("language", DisplaySettings.LANGUAGE_ENGLISH));
+        // Honor an explicit in-app choice; otherwise match the television's
+        // system language rather than silently defaulting all installs to English.
+        String chosen = Prefers.getString("language", "");
+        if (!chosen.isEmpty()) return DisplaySettings.normalizeLanguage(chosen);
+        Locale systemLocale = Locale.getDefault();
+        if ("zh".equalsIgnoreCase(systemLocale.getLanguage())) {
+            return DisplaySettings.normalizeLanguage(systemLocale.toLanguageTag());
+        }
+        return DisplaySettings.LANGUAGE_ENGLISH;
     }
 
     public static void putLanguage(String language) {
