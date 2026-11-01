@@ -62,31 +62,75 @@
   }
 
   /* ---------------- 原生 SDK（fm.invoke） ---------------- */
-  function sdkInvoke(method, payload) {
-    var fn = null;
-    var owner = null;
-    if (window.fm && typeof window.fm.invoke === 'function') { fn = window.fm.invoke; owner = window.fm; }
-    else if (window.fongmi && typeof window.fongmi.invoke === 'function') { fn = window.fongmi.invoke; owner = window.fongmi; }
-    if (!fn) return Promise.reject({ code: 'NO_BRIDGE', message: '未检测到原生数据接口' });
+  // HomeWebController can inject the SDK and the per-load main-frame token after
+  // the page's own scripts run. Never send an unauthenticated bootstrap request.
+  // Keep this bounded: a broken bridge must not strand the home page forever.
+  var BRIDGE_POLL_MS = 200;
+  var BRIDGE_MAX_POLLS = 30;
+
+  function bridgeInvoker() {
+    if (window.fm && typeof window.fm.invoke === 'function') return { fn: window.fm.invoke, owner: window.fm };
+    if (window.fongmi && typeof window.fongmi.invoke === 'function') return { fn: window.fongmi.invoke, owner: window.fongmi };
+    return null;
+  }
+
+  function waitForBridgeReady() {
     return new Promise(function (resolve, reject) {
-      var out;
-      try { out = fn.call(owner, method, payload || {}); } catch (e) {
-        reject({ code: 'INVOKE_FAILED', message: '数据接口调用失败' });
-        return;
+      var polls = 0;
+      var timer = null;
+      var completed = false;
+      function cleanup() {
+        if (timer) clearTimeout(timer);
+        window.removeEventListener('fmsdk', check);
+        window.removeEventListener('fmbridge-ready', check);
       }
-      Promise.resolve(out).then(function (value) {
-        var data = value;
-        if (typeof data === 'string') {
-          try { data = JSON.parse(data); } catch (e) {
-            reject({ code: 'INTERNAL', message: '原生返回内容无法解析' });
-            return;
-          }
+      function check() {
+        if (completed) return;
+        var token = window.__fmBridgeToken;
+        var invoker = bridgeInvoker();
+        if (typeof token === 'string' && token.length > 0 && invoker) {
+          completed = true;
+          cleanup();
+          resolve(invoker);
+          return;
         }
-        if (data && data.ok === false) { reject(normalizeError(data.error)); return; }
-        if (data === undefined || data === null) { reject({ code: 'INTERNAL', message: '原生返回空结果' }); return; }
-        resolve(data);
-      }, function (error) {
-        reject(normalizeError(error));
+        if (++polls >= BRIDGE_MAX_POLLS) {
+          completed = true;
+          cleanup();
+          reject({ code: 'BRIDGE_TIMEOUT', message: '原生桥接初始化超时' });
+          return;
+        }
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(check, BRIDGE_POLL_MS);
+      }
+      window.addEventListener('fmsdk', check);
+      window.addEventListener('fmbridge-ready', check);
+      check();
+    });
+  }
+
+  function sdkInvoke(method, payload) {
+    return waitForBridgeReady().then(function (invoker) {
+      return new Promise(function (resolve, reject) {
+        var out;
+        try { out = invoker.fn.call(invoker.owner, method, payload || {}); } catch (e) {
+          reject({ code: 'INVOKE_FAILED', message: '数据接口调用失败' });
+          return;
+        }
+        Promise.resolve(out).then(function (value) {
+          var data = value;
+          if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch (e) {
+              reject({ code: 'INTERNAL', message: '原生返回内容无法解析' });
+              return;
+            }
+          }
+          if (data && data.ok === false) { reject(normalizeError(data.error)); return; }
+          if (data === undefined || data === null) { reject({ code: 'INTERNAL', message: '原生返回空结果' }); return; }
+          resolve(data);
+        }, function (error) {
+          reject(normalizeError(error));
+        });
       });
     });
   }
@@ -103,7 +147,7 @@
   function describeError(error) {
     var code = error && error.code ? error.code : 'INTERNAL';
     if (code === 'NO_CONFIG') return '尚未导入可用的片源配置。导入后即可在此浏览、搜索与播放。';
-    if (code === 'NO_BRIDGE') return '当前页面没有连接原生数据接口，无法读取来源数据。';
+    if (code === 'NO_BRIDGE' || code === 'BRIDGE_TIMEOUT') return '正在等待原生接口连接，请稍后重试或重新打开首页。';
     if (code === 'NETWORK') return '无法连接到当前来源，请检查网络或稍后重试。';
     if (code === 'TIMEOUT') return '来源响应超时，请重试或在来源中更换站点。';
     return '读取内容失败，请重试，或换一个来源。';
