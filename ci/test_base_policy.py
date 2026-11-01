@@ -115,6 +115,26 @@ class VerifyApkTest(unittest.TestCase):
             self.assertEqual(verifier.find_apks(Path(d)), [])
 
 
+class CaigualeBootstrapRegressionTest(unittest.TestCase):
+    """Source-level guards for the TV homepage registration/first-run regression."""
+
+    def test_bootstrap_mutable_items_and_version_after_success(self):
+        source = (ROOT / "app/src/main/java/com/fongmi/android/tv/CaigualeBootstrap.java").read_text()
+        self.assertIn("new ArrayList<>(registry.getItems())", source)
+        self.assertIn("registry.setItems(items)", source)
+        self.assertNotIn("registry.getItems().add(item)", source)
+        self.assertIn("Prefers.put(VERSION_KEY, VERSION)", source)
+        self.assertLess(source.index("            register();"),
+                        source.index("            if (fresh) Prefers.put(VERSION_KEY, VERSION);"))
+        self.assertIn("Caiguale webHome registration not persisted", source)
+
+    def test_empty_source_config_still_loads_custom_webhome(self):
+        source = (ROOT / "app/src/main/java/com/fongmi/android/tv/api/config/VodConfig.java").read_text()
+        self.assertIn("if (TextUtils.isEmpty(config.getUrl()))", source)
+        self.assertIn("CustomCspSetting.inject(getSites())", source)
+        self.assertIn("setHome(config, firstHome, false)", source)
+
+
 class SourcePolicyTest(unittest.TestCase):
     def test_repository_tree_passes(self):
         errors = source_check.check(ROOT)
