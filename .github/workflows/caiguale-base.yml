@@ -1,3 +1,4 @@
+# EXO-only official Media3 Java compatibility pass: build verification 3
 name: Caiguale TV - EXO-only Base (ARM64 Lite, manual)
 
 # 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
