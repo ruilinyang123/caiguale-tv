@@ -60,7 +60,13 @@ jobs:
           packages: platform-tools
       - name: Install Android SDK
         run: |
-          sdkmanager --install 'platforms;android-37' 'build-tools;37.0.0' 'build-tools;36.0.0'
+          # API 37 SDK manager package is named android-37.0 (not android-37).
+          sdkmanager --install 'platforms;android-37.0' 'build-tools;37.0.0' 'build-tools;36.0.0'
+          # Some AGP lookups expect the unqualified platforms/android-37 path.
+          if [ -d "$ANDROID_HOME/platforms/android-37.0" ] && [ ! -e "$ANDROID_HOME/platforms/android-37" ]; then
+            ln -s android-37.0 "$ANDROID_HOME/platforms/android-37"
+          fi
+          echo "$ANDROID_HOME/build-tools/37.0.0" >> "$GITHUB_PATH"
           echo "sdk.dir=$ANDROID_HOME" > local.properties
       - name: Preflight
         shell: bash
