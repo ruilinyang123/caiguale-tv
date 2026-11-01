@@ -143,12 +143,12 @@ android {
 }
 
 androidComponents {
-    //精简版只出 universal 与 arm64：armv7 老设备不是精简版目标（issue #11 反馈 TV 端同样需要精简版，已放开 leanback）。
-    // 本分支只允许一个目标变体，其他 Full/mobile/其它 ABI/Release 变体一律关闭。
-    // AGP 8/9 对属性名做过改名，两种写法都尝试，避免把“能否构建”建立在猜测上。
-    def baseVariant = 'leanbackLiteArm64_v8aDebug'
+    // EXO-only 基础版支持两种 TV Debug ABI: arm64-v8a 和 armeabi-v7a。
+    // 只允许 Leanback Lite 的 ARM64/ARMv7 变体；其他 Full/mobile/universal/Release 仍禁用。
+    // 小米 MiTV-MFTR0 的 Android 14 系统仅有 32-bit armeabi-v7a 应用 ABI。
+    def baseVariants = ['leanbackLiteArm64_v8aDebug', 'leanbackLiteArmeabi_v7aDebug'] as Set
     beforeVariants(selector().all()) { variantBuilder ->
-        boolean allowed = variantBuilder.name == baseVariant
+        boolean allowed = baseVariants.contains(variantBuilder.name)
         try {
             variantBuilder.enable = allowed
         } catch (MissingPropertyException ignored) {
