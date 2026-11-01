@@ -272,7 +272,7 @@ public final class CodecCapabilityInspector {
 
     private static String normalizeAudioMime(String mime) {
         if (mime == null) return null;
-        if (mime.startsWith(MimeTypes.AUDIO_DTS_HD + ";") || MimeTypes.AUDIO_MEDIA3_DTS_HD_MA_CORELESS.equals(mime)) return MimeTypes.AUDIO_DTS_HD;
+        if (mime.startsWith(MimeTypes.AUDIO_DTS_HD + ";")) return MimeTypes.AUDIO_DTS_HD;
         if (MimeTypes.AUDIO_AMR.equals(mime)) return MimeTypes.AUDIO_AMR_NB;
         return mime;
     }
