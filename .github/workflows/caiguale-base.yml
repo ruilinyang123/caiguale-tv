@@ -1,5 +1,5 @@
-# EXO-only official Media3 Java compatibility pass: build verification 3
-name: Caiguale TV - EXO-only Base (ARM64 Lite, manual)
+# EXO-only MiTV-MFTR0 ARMv7 (32-bit) build verification
+name: Caiguale TV - EXO-only Base (ARMv7 Lite, manual)
 
 # 本工作流只构建 EXO-only 基础版，绝不触发 Full 构建。
 # 首次 EXO-only 云端构建：仅对本工作流文件的分支变更触发一次 push 构建。
@@ -35,12 +35,13 @@ jobs:
         run: python3 ci/test_base_policy.py
 
   build-base:
-    name: Build leanbackLiteArm64_v8aDebug
+    name: Build leanbackLiteArmeabi_v7aDebug
     needs: base-policy
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=false
+      CAIGUALE_TARGET_ABI: armeabi-v7a
     steps:
       - uses: actions/checkout@v4
       - name: Validate source exists
@@ -86,7 +87,7 @@ jobs:
           ./gradlew --no-daemon --no-parallel --max-workers=2 \
             --no-build-cache --stacktrace --console=plain \
             '-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' \
-            :app:assembleLeanbackLiteArm64_v8aDebug \
+            :app:assembleLeanbackLiteArmeabi_v7aDebug \
             2>&1 | tee caiguale-base-gradle.log
       - name: Verify base APK contract
         if: success()
@@ -96,12 +97,14 @@ jobs:
           APK=$(find app/build/outputs/apk -name '*.apk' | head -1)
           aapt2 dump badging "$APK" | head -5
           aapt2 dump badging "$APK" | grep -q "package: name='com.caiguale.tv'"
-          ! aapt2 dump badging "$APK" | grep -q 'armeabi-v7a'
+          aapt2 dump badging "$APK" | grep -q "native-code: 'armeabi-v7a'"
+          ! aapt2 dump badging "$APK" | grep -q 'arm64-v8a'
+          apksigner verify --verbose "$APK"
       - name: Upload base APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: caiguale-tv-exo-base-arm64-debug
+          name: caiguale-tv-exo-base-armeabi-v7a-debug
           path: |
             app/build/outputs/apk/**/*.apk
             ci-base-sha256.txt
