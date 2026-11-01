@@ -223,7 +223,10 @@ public class HomeWebController {
     }
 
     private String bridgeTokenScript() {
-        return "(function(){try{window.__fmBridgeToken='" + bridgeToken + "';}catch(e){}})();";
+        // Signal main-frame consumers after installing the per-load token. The
+        // page may have started before this onPageFinished fallback executes.
+        return "(function(){try{window.__fmBridgeToken='" + bridgeToken
+                + "';window.dispatchEvent(new Event('fmbridge-ready'));}catch(e){}})();";
     }
 
     private void refreshTrust() {
